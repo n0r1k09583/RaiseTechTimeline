@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>タスク — 課題提出</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="task">
+  <nav class="combo-nav">
+    <a href="home.html">課題提出</a>
+  </nav>
+  <main class="page wide" style="padding-top:24px;">
+    <h1>タスク</h1>
+    <p class="lead">カードを追加して、未着手から完了まで進めます。</p>
+    <div class="board" id="board"></div>
+  </main>
+  <script>
+    var KEY = "a2-task-v1";
+    var cols = [
+      { id: "todo", title: "未着手" },
+      { id: "doing", title: "作業中" },
+      { id: "done", title: "完了" }
+    ];
+    function load() {
+      try { return JSON.parse(localStorage.getItem(KEY)) || seed(); }
+      catch (e) { return seed(); }
+    }
+    function seed() {
+      return [
+        { id: 1, col: "todo", title: "要件定義を確認する" },
+        { id: 2, col: "doing", title: "画面をシンプルにする" },
+        { id: 3, col: "done", title: "ログインを試す" }
+      ];
+    }
+    function save(items) { localStorage.setItem(KEY, JSON.stringify(items)); }
+    var items = load();
+    function render() {
+      var root = document.getElementById("board");
+      root.innerHTML = cols.map(function (c) {
+        var cards = items.filter(function (i) { return i.col === c.id; }).map(function (i) {
+          var next = c.id === "todo" ? "doing" : c.id === "doing" ? "done" : "";
+          var btn = next ? '<small><button type="button" class="btn ghost" data-move="' + i.id + '" data-to="' + next + '">進める</button></small>' : "";
+          return '<div class="tcard">' + i.title + btn + "</div>";
+        }).join("");
+        return '<section class="col"><h2>' + c.title + "</h2>" + cards +
+          '<form class="col-add" data-col="' + c.id + '"><input type="text" placeholder="カードを追加" /><button class="btn" type="submit">追加</button></form></section>';
+      }).join("");
+      root.querySelectorAll("form").forEach(function (f) {
+        f.addEventListener("submit", function (e) {
+          e.preventDefault();
+          var input = f.querySelector("input");
+          var title = (input.value || "").trim();
+          if (!title) return;
+          items.push({ id: Date.now(), col: f.getAttribute("data-col"), title: title });
+          save(items);
+          input.value = "";
+          render();
+        });
+      });
+      root.querySelectorAll("[data-move]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var id = Number(b.getAttribute("data-move"));
+          var to = b.getAttribute("data-to");
+          items.forEach(function (i) { if (i.id === id) i.col = to; });
+          save(items);
+          render();
+        });
+      });
+    }
+    render();
+  </script>
+</body>
+</html>

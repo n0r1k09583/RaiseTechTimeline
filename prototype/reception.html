@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>受付 — 課題提出</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="reception">
+  <nav class="combo-nav">
+    <a href="home.html">課題提出</a>
+  </nav>
+  <main class="kiosk">
+    <h1>受付</h1>
+    <p class="lead">到着の申告と、受付への問い合わせができます。</p>
+    <button class="btn" type="button" id="in">ご予約の方</button>
+    <button class="btn ghost" type="button" id="out">チェックアウト</button>
+    <button class="btn ghost" type="button" id="ask">お問い合わせ</button>
+    <p class="hint" style="margin-top:24px;">試す番号　4821 田中　7390 佐藤　1564 鈴木</p>
+    <p class="hint" id="msg"></p>
+  </main>
+  <script>
+    function say(t) { document.getElementById("msg").textContent = t; }
+    document.getElementById("in").onclick = function () {
+      var n = prompt("お名前、または受付番号", "4821");
+      if (n) say("到着を受付へ伝えました。（" + n + "）");
+    };
+    document.getElementById("out").onclick = function () {
+      var n = prompt("お名前、または受付番号", "4821");
+      if (n) say("チェックアウトを伝えました。（" + n + "）");
+    };
+    document.getElementById("ask").onclick = function () {
+      var n = prompt("お名前", "山田");
+      if (n) say(n + " さん、受付へつながりました。");
+    };
+  </script>
+</body>
+</html>

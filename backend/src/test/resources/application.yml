@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:sqlite:./target/timeline-test.db
+    hikari:
+      maximum-pool-size: 1
+
+jwt:
+  secret: test-secret-do-not-use-in-prod

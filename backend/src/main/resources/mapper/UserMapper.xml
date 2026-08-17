@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.raisetech.timeline.mapper.UserMapper">
+
+  <select id="findById" resultType="com.raisetech.timeline.domain.User">
+    SELECT id, email, username, display_name, password_digest, created_at, updated_at
+    FROM users
+    WHERE id = #{id}
+  </select>
+
+  <select id="findByEmail" resultType="com.raisetech.timeline.domain.User">
+    SELECT id, email, username, display_name, password_digest, created_at, updated_at
+    FROM users
+    WHERE email = #{email}
+  </select>
+
+  <select id="findByUsername" resultType="com.raisetech.timeline.domain.User">
+    SELECT id, email, username, display_name, password_digest, created_at, updated_at
+    FROM users
+    WHERE username = #{username}
+  </select>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO users (email, username, display_name, password_digest)
+    VALUES (#{email}, #{username}, #{displayName}, #{passwordDigest})
+  </insert>
+
+  <select id="count" resultType="int">
+    SELECT COUNT(*) FROM users
+  </select>
+</mapper>
