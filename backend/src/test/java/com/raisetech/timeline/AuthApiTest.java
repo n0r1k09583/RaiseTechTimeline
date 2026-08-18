@@ -7,19 +7,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ContextConfiguration(initializers = DeleteSqliteTestDb.class)
 class AuthApiTest {
 
   @Autowired
@@ -27,11 +26,6 @@ class AuthApiTest {
 
   @Autowired
   ObjectMapper objectMapper;
-
-  @BeforeAll
-  static void deleteTestDb() throws Exception {
-    Files.deleteIfExists(Path.of("target/timeline-test.db"));
-  }
 
   @Test
   void healthIsOk() throws Exception {
@@ -54,6 +48,8 @@ class AuthApiTest {
                 }
                 """))
         .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.accessToken").isString())
+        .andExpect(jsonPath("$.refreshToken").isString())
         .andExpect(jsonPath("$.token").isString())
         .andExpect(jsonPath("$.user.username").value("newuser"))
         .andExpect(jsonPath("$.user.password").doesNotExist())
@@ -81,13 +77,15 @@ class AuthApiTest {
                 }
                 """))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.token").isString())
+        .andExpect(jsonPath("$.accessToken").isString())
+        .andExpect(jsonPath("$.refreshToken").isString())
         .andExpect(jsonPath("$.user.username").value("yamada"))
         .andExpect(jsonPath("$.user.password").doesNotExist())
         .andReturn();
 
     JsonNode body = objectMapper.readTree(login.getResponse().getContentAsString());
-    String token = body.get("token").asText();
+    String accessToken = body.get("accessToken").asText();
+    String refreshToken = body.get("refreshToken").asText();
 
     mockMvc.perform(post("/api/login")
             .contentType(MediaType.APPLICATION_JSON)
@@ -103,9 +101,61 @@ class AuthApiTest {
     mockMvc.perform(get("/api/me"))
         .andExpect(status().isUnauthorized());
 
-    mockMvc.perform(get("/api/me").header("Authorization", "Bearer " + token))
+    mockMvc.perform(get("/api/me").header("Authorization", "Bearer " + accessToken))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.user.username").value("yamada"))
         .andExpect(jsonPath("$.user.password").doesNotExist());
+
+    mockMvc.perform(get("/api/me").header("Authorization", "Bearer " + refreshToken))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void refreshRotatesTokenAndLogoutRevokes() throws Exception {
+    MvcResult login = mockMvc.perform(post("/api/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("""
+                {
+                  "email": "hanako@example.com",
+                  "password": "password123"
+                }
+                """))
+        .andExpect(status().isOk())
+        .andReturn();
+
+    JsonNode first = objectMapper.readTree(login.getResponse().getContentAsString());
+    String oldRefresh = first.get("refreshToken").asText();
+
+    MvcResult refreshed = mockMvc.perform(post("/api/refresh")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"refreshToken\":\"" + oldRefresh + "\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.accessToken").isString())
+        .andExpect(jsonPath("$.refreshToken").isString())
+        .andExpect(jsonPath("$.user.username").value("hanako"))
+        .andReturn();
+
+    JsonNode second = objectMapper.readTree(refreshed.getResponse().getContentAsString());
+    String newAccess = second.get("accessToken").asText();
+    String newRefresh = second.get("refreshToken").asText();
+
+    mockMvc.perform(get("/api/me").header("Authorization", "Bearer " + newAccess))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.user.username").value("hanako"));
+
+    mockMvc.perform(post("/api/refresh")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"refreshToken\":\"" + oldRefresh + "\"}"))
+        .andExpect(status().isUnauthorized());
+
+    mockMvc.perform(post("/api/logout")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"refreshToken\":\"" + newRefresh + "\"}"))
+        .andExpect(status().isNoContent());
+
+    mockMvc.perform(post("/api/refresh")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"refreshToken\":\"" + newRefresh + "\"}"))
+        .andExpect(status().isUnauthorized());
   }
 }

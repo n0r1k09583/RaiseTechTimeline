@@ -1,15 +1,24 @@
 import { useState, type FormEvent } from "react";
-import { login } from "./api";
+import { login, type User } from "./api";
+
+type AuthOk = { accessToken?: string; refreshToken?: string; token?: string; user: User };
 
 type Props = {
-  onSuccess: (token: string) => void;
+  onSuccess: (res: AuthOk) => void;
   onGoSignup: () => void;
 };
+
+const DEMOS = [
+  { email: "yamada@example.com", label: "@yamada" },
+  { email: "hanako@example.com", label: "@hanako" },
+  { email: "ichiro@example.com", label: "@ichiro" },
+];
 
 export function LoginPage({ onSuccess, onGoSignup }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
   function fill(demoEmail: string) {
     setEmail(demoEmail);
@@ -24,55 +33,66 @@ export function LoginPage({ onSuccess, onGoSignup }: Props) {
       setError("メールアドレスとパスワードを入力してください");
       return;
     }
+    setBusy(true);
     try {
       const res = await login(email, password);
-      onSuccess(res.token);
+      onSuccess(res);
     } catch (err) {
       setPassword("");
       setError(err instanceof Error ? err.message : "ログインに失敗しました");
+    } finally {
+      setBusy(false);
     }
   }
 
   return (
-    <div className="wrap">
-      <p className="site">RaiseTechタイムライン</p>
-      <h1>ログイン</h1>
-      <p className="demo">
-        試すアカウント（パスワードは password123）
-        <br />
-        <button type="button" className="btn ghost" onClick={() => fill("yamada@example.com")}>
-          yamada
-        </button>
-        <button type="button" className="btn ghost" onClick={() => fill("hanako@example.com")}>
-          hanako
-        </button>
-        <button type="button" className="btn ghost" onClick={() => fill("ichiro@example.com")}>
-          ichiro
-        </button>
+    <main className="wrap">
+      <p className="brand">
+        課題提出
+        <span className="brand-sub">タイムライン</span>
       </p>
-      <form onSubmit={onSubmit}>
-        <label htmlFor="email">メールアドレス</label>
-        <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <label htmlFor="password">パスワード</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <div className="err">{error}</div>
-        <div className="row">
-          <button className="btn" type="submit">
-            ログイン
+      <section className="card">
+        <h1>ログイン</h1>
+        <p className="demo">
+          試すアカウント（パスワードは password123）
+          <br />
+          {DEMOS.map((demo) => (
+            <button key={demo.email} type="button" className="btn ghost" onClick={() => fill(demo.email)}>
+              {demo.label}
+            </button>
+          ))}
+        </p>
+        <form onSubmit={onSubmit}>
+          <label htmlFor="email">メールアドレス</label>
+          <input
+            id="email"
+            type="email"
+            autoComplete="username"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <label htmlFor="password">パスワード</label>
+          <input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <div className="err">{error}</div>
+          <div className="row-actions">
+            <button className="btn" type="submit" disabled={busy}>
+              ログイン
+            </button>
+          </div>
+        </form>
+        <p className="hint">
+          初めての人は{" "}
+          <button type="button" className="btn link" onClick={onGoSignup}>
+            新規登録
           </button>
-        </div>
-      </form>
-      <p className="hint">
-        初めての人は{" "}
-        <button type="button" className="btn link" onClick={onGoSignup}>
-          新規登録
-        </button>
-      </p>
-    </div>
+        </p>
+      </section>
+    </main>
   );
 }

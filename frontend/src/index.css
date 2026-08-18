@@ -1,8 +1,8 @@
 :root {
-  --text: #222;
-  --muted: #666;
-  --line: #ccc;
-  --bg: #fff;
+  --text: #111;
+  --muted: #6b6b6b;
+  --line: #e2e2e2;
+  --bg: #f7f7f5;
   --danger: #b00020;
   font-family: "Yu Gothic UI", "Hiragino Sans", Meiryo, sans-serif;
   font-size: 16px;
@@ -16,16 +16,38 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
+  min-height: 100%;
 }
 
 .wrap {
   max-width: 400px;
-  margin: 40px auto;
-  padding: 0 16px;
+  margin: 0 auto;
+  padding: 40px 16px;
+}
+
+.brand {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 24px;
+}
+
+.brand-sub {
+  display: block;
+  margin-top: 6px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 16px;
 }
 
 h1 {
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   font-size: 20px;
   font-weight: 700;
 }
@@ -35,6 +57,13 @@ h1 {
   color: var(--muted);
   font-size: 13px;
   margin: 0 0 16px;
+}
+
+.counter {
+  text-align: right;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 4px 0 0;
 }
 
 label {
@@ -49,6 +78,7 @@ input {
   border-radius: 2px;
   padding: 8px;
   font: inherit;
+  background: #fff;
 }
 
 .err {
@@ -58,8 +88,11 @@ input {
   margin: 8px 0 0;
 }
 
-.row {
-  margin-top: 16px;
+.row-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 14px;
 }
 
 .btn {
@@ -72,8 +105,12 @@ input {
   cursor: pointer;
 }
 
-.btn.ghost,
-.btn.link {
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn.ghost {
   background: #fff;
   color: #333;
 }
@@ -81,27 +118,17 @@ input {
 .btn.link {
   border: 0;
   padding: 0;
-  color: #06c;
+  color: #111;
   text-decoration: underline;
   background: none;
-}
-
-a {
-  color: #06c;
 }
 
 .demo {
   font-size: 13px;
   color: var(--muted);
-  margin-bottom: 16px;
+  margin: 0 0 16px;
 }
 
 .demo button {
   margin: 4px 8px 0 0;
-}
-
-.site {
-  font-size: 14px;
-  color: var(--muted);
-  margin: 0 0 24px;
 }

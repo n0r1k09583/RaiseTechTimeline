@@ -2,16 +2,27 @@ package com.raisetech.timeline.dto;
 
 public class AuthResponse {
 
-  private String token;
+  private String accessToken;
+  private String refreshToken;
   private UserResponse user;
 
-  public AuthResponse(String token, UserResponse user) {
-    this.token = token;
+  public AuthResponse(String accessToken, String refreshToken, UserResponse user) {
+    this.accessToken = accessToken;
+    this.refreshToken = refreshToken;
     this.user = user;
   }
 
+  public String getAccessToken() {
+    return accessToken;
+  }
+
+  public String getRefreshToken() {
+    return refreshToken;
+  }
+
+  /** 以前の { token } 形式との互換。中身はアクセストークン。 */
   public String getToken() {
-    return token;
+    return accessToken;
   }
 
   public UserResponse getUser() {

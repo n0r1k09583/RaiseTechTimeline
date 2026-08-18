@@ -16,7 +16,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
   public WebMvcConfig(
       AuthInterceptor authInterceptor,
-      @Value("${cors.origins}") String origins) {
+      @Value("${cors.origins:http://localhost:5173,http://127.0.0.1:5173}") String origins) {
     this.authInterceptor = authInterceptor;
     this.origins = Arrays.stream(origins.split(",")).map(String::trim).toArray(String[]::new);
   }
@@ -33,6 +33,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
   public void addInterceptors(InterceptorRegistry registry) {
     registry.addInterceptor(authInterceptor)
         .addPathPatterns("/api/**")
-        .excludePathPatterns("/api/signup", "/api/login", "/api/health");
+        .excludePathPatterns("/api/signup", "/api/login", "/api/refresh", "/api/logout", "/api/health");
   }
 }

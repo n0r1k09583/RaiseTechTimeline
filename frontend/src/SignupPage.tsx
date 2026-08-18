@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from "react";
-import { signup } from "./api";
+import { signup, type User } from "./api";
+
+type AuthOk = { accessToken?: string; refreshToken?: string; token?: string; user: User };
 
 type Props = {
-  onSuccess: (token: string) => void;
+  onSuccess: (res: AuthOk) => void;
   onGoLogin: () => void;
 };
 
@@ -13,62 +15,89 @@ export function SignupPage({ onSuccess, onGoLogin }: Props) {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
+    setBusy(true);
     try {
       const res = await signup({ username, displayName, email, password, confirm });
-      onSuccess(res.token);
+      onSuccess(res);
     } catch (err) {
       setError(err instanceof Error ? err.message : "登録に失敗しました");
+    } finally {
+      setBusy(false);
     }
   }
 
   return (
-    <div className="wrap">
-      <p className="site">RaiseTechタイムライン</p>
-      <h1>新規登録</h1>
-      <form onSubmit={onSubmit}>
-        <label htmlFor="username">ユーザー名</label>
-        <input id="username" value={username} onChange={(e) => setUsername(e.target.value)} />
-        <p className="hint">3〜20文字。半角英小文字・数字・_</p>
-        <label htmlFor="displayName">表示名</label>
-        <input
-          id="displayName"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          maxLength={20}
-        />
-        <label htmlFor="email">メールアドレス</label>
-        <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <label htmlFor="password">パスワード</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <label htmlFor="confirm">パスワード確認</label>
-        <input
-          id="confirm"
-          type="password"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-        />
-        <div className="err">{error}</div>
-        <div className="row">
-          <button className="btn" type="submit">
-            登録する
-          </button>
-        </div>
-      </form>
-      <p className="hint">
-        すでにアカウントがある人は{" "}
-        <button type="button" className="btn link" onClick={onGoLogin}>
-          ログイン
-        </button>
+    <main className="wrap">
+      <p className="brand">
+        課題提出
+        <span className="brand-sub">タイムライン</span>
       </p>
-    </div>
+      <section className="card">
+        <h1>新規登録</h1>
+        <form onSubmit={onSubmit}>
+          <label htmlFor="username">ユーザー名</label>
+          <input
+            id="username"
+            value={username}
+            placeholder="yamada_1"
+            autoComplete="username"
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <p className="hint">3〜20文字。半角英小文字・数字・_</p>
+          <label htmlFor="displayName">表示名</label>
+          <input
+            id="displayName"
+            value={displayName}
+            maxLength={20}
+            autoComplete="nickname"
+            onChange={(e) => setDisplayName(e.target.value)}
+          />
+          <p className="counter">
+            {displayName.length} / 20
+          </p>
+          <label htmlFor="email">メールアドレス</label>
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <label htmlFor="password">パスワード</label>
+          <input
+            id="password"
+            type="password"
+            autoComplete="new-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <label htmlFor="confirm">パスワード確認</label>
+          <input
+            id="confirm"
+            type="password"
+            autoComplete="new-password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+          />
+          <div className="err">{error}</div>
+          <div className="row-actions">
+            <button className="btn" type="submit" disabled={busy}>
+              登録する
+            </button>
+          </div>
+        </form>
+        <p className="hint">
+          すでにアカウントがある人は{" "}
+          <button type="button" className="btn link" onClick={onGoLogin}>
+            ログイン
+          </button>
+        </p>
+      </section>
+    </main>
   );
 }

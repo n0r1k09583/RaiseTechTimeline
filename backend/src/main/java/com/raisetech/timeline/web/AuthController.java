@@ -3,6 +3,7 @@ package com.raisetech.timeline.web;
 import com.raisetech.timeline.dto.AuthResponse;
 import com.raisetech.timeline.dto.HealthResponse;
 import com.raisetech.timeline.dto.LoginRequest;
+import com.raisetech.timeline.dto.RefreshRequest;
 import com.raisetech.timeline.dto.SignupRequest;
 import com.raisetech.timeline.dto.UserResponse;
 import com.raisetech.timeline.service.AuthService;
@@ -40,6 +41,17 @@ public class AuthController {
   @PostMapping("/login")
   public AuthResponse login(@RequestBody LoginRequest request) {
     return auth.login(request);
+  }
+
+  @PostMapping("/refresh")
+  public AuthResponse refresh(@RequestBody RefreshRequest request) {
+    return auth.refresh(request.getRefreshToken());
+  }
+
+  @PostMapping("/logout")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void logout(@RequestBody(required = false) RefreshRequest request) {
+    auth.logout(request == null ? null : request.getRefreshToken());
   }
 
   @GetMapping("/me")

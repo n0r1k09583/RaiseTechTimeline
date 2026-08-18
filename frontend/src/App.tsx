@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { getToken, me, setToken, type User } from "./api";
+import { accessOf, getToken, logout, me, setSession, type User } from "./api";
 import { LoginPage } from "./LoginPage";
 import { SignupPage } from "./SignupPage";
+import { SuccessPage } from "./SuccessPage";
 
 type Screen = "login" | "signup";
 
@@ -18,13 +19,19 @@ export function App() {
     }
     me()
       .then((res) => setUser(res.user))
-      .catch(() => setToken(null))
+      .catch(() => setSession(null, null))
       .finally(() => setBoot(false));
   }, []);
 
-  function onAuthed(token: string) {
-    setToken(token);
-    me().then((res) => setUser(res.user));
+  function onAuthed(res: { accessToken?: string; refreshToken?: string; token?: string; user: User }) {
+    setSession(accessOf(res), res.refreshToken ?? null);
+    setUser(res.user);
+  }
+
+  async function onLogout() {
+    await logout();
+    setUser(null);
+    setScreen("login");
   }
 
   if (boot) return <p className="wrap">読み込み中…</p>;
@@ -37,24 +44,5 @@ export function App() {
     );
   }
 
-  return (
-    <div className="wrap">
-      <p className="site">RaiseTechタイムライン</p>
-      <h1>Hello World</h1>
-      <p className="lead">ログイン後の仮画面です。</p>
-      <div className="row">
-        <button
-          className="btn ghost"
-          type="button"
-          onClick={() => {
-            setToken(null);
-            setUser(null);
-            setScreen("login");
-          }}
-        >
-          ログアウト
-        </button>
-      </div>
-    </div>
-  );
+  return <SuccessPage user={user} onLogout={onLogout} />;
 }

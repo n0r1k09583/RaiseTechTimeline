@@ -14,7 +14,7 @@ description: >-
 - 画面の入口名は **課題提出**。おうち受付のフォルダには書かない
 - GitHub は岡田法子アカウント `n0r1k09583` の **private**
 - force push しない。git config は変えない
-- `.env` / `*.db` / `backend/target/` / `node_modules/` は Git に入れない
+- `.env` / `*.db` / `backend/target/` / `node_modules/` / `frontend/e2e/` は Git に入れない
 - 機能定義書のディレクトリは `FEATURES`（`FUTURES` ではない）
 
 ## リポジトリ
@@ -52,6 +52,8 @@ gh repo create RaiseTechTimeline --private --source=. --remote=origin --push
 
 ## 再開用（ここまでの確定）
 
-- 入口は課題提出のみ（home.html）。3カードでタスク／受付／タイムラインへ
-- デザインはシンプル（白・細い枠・黒ボタン）
-- 本実装の認証は Spring Boot + MyBatis + JWT。プロトタイプは `node server.js` で 5178
+- 入口は課題提出のみ（home.html）。見出しの下に「タイムライン」は出さない
+- 説明文: タスク、受付、タイムラインを、課題ごとにボタンを分けて同じシンプルな画面に揃えています
+- 3カードでタスク／受付／タイムラインへ。デザインはシンプル（白・細い枠・黒ボタン）
+- 7機能（ログイン・タイムライン・コメント・いいね・画像・フォロー・コメント数）はプロトタイプ `node server.js` の 5178 で表示する
+- 本実装は Spring Boot + MyBatis + Flyway + JWT（アクセス＋リフレッシュ）。画面は 5173。ログイン後は「ログイン成功」。タイムライン API はまだ

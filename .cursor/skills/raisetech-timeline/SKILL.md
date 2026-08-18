@@ -15,6 +15,8 @@ description: >-
 ## 入口（正）
 
 - 表示名は **課題提出**（「課題提出2」と出さない）
+- ホーム（home.html）の見出し直下に「タイムライン」は出さない。説明文は「課題ごとにボタンを分けて同じシンプルな画面に揃えています」
+- ログイン／新規登録など SNS 画面のブランドは「課題提出」の下に「タイムライン」
 - 入口: `prototype/home.html` → http://127.0.0.1:5178/home.html
 - 上メニューは「課題提出」だけ。タスク／受付／タイムラインはホームのカードから入る
 
@@ -28,16 +30,32 @@ description: >-
 | 受付 | `prototype/reception.html` | おうち受付。画面上の名前は **受付**（おうちは出さない） |
 | タイムライン | `prototype/login.html` 以降 | SNS。投稿・コメント・いいね・フォロー・検索 |
 
+## 7機能（プロトタイプで表示できる）
+
+ポート **5178**（`prototype/` で `node server.js`）。ログインは `@yamada` など、パスワード `password123`。
+
+| 機能 | 状態 | 場所 |
+|------|------|------|
+| ログイン（新規登録・ログアウト） | プロトタイプで可 | login.html / signup.html |
+| タイムライン | プロトタイプで可 | 「すべて」「フォロー中」 |
+| コメント | プロトタイプで可 | 投稿の「コメント n件」 |
+| いいね | プロトタイプで可 | ハートと件数 |
+| 画像投稿 | プロトタイプで可 | 「投稿する」で1枚 |
+| フォロー | プロトタイプで可 | プロフィールのフォロー |
+| コメント数が分かる | プロトタイプで可 | タイムラインのカード上 |
+
 ## 本実装（認証まで）
 
 - 画面: `frontend/` React 19.2.8 / Vite 6.4.3 / TypeScript 5.7.3（ポート 5173）
-- API: `backend/` Spring Boot + MyBatis + SQLite + JWT（ポート 8080）。**jOOQ 禁止。Express に戻さない**
-- ログイン後は Hello World。タイムライン API はまだ
+- API: `backend/` Spring Boot + MyBatis + SQLite + JWT + **Flyway**（ポート 8080）。**jOOQ 禁止。Express に戻さない**
+- ログイン／新規登録／ログアウト。成功後は **ログイン成功** の仮画面。タイムライン API はまだ
+- JWT は **アクセス（15分）＋リフレッシュ（7日、DB保存）**。`POST /api/refresh` と `POST /api/logout`
+- マイグレーション: `db/migration/V1__create_users.sql` と `V2__create_refresh_tokens.sql`
 - 参考はタスクマネジメント。プラットフォームバックエンドは見ない
 
 ## やってはいけないこと
 
 - おうち受付の Next.js をこのSNS画面に使わない
 - 案内猫・にゃんこ・おうち を画面タイトルに戻さない
-- `.env` / `*.db` / `backend/target/` を Git に入れない
+- `.env` / `*.db` / `backend/target/` / `frontend/e2e/` を Git に入れない
 - AWS 常時稼働・有料リソースを作らない

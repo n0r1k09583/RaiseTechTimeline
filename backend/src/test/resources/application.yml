@@ -1,8 +1,25 @@
 spring:
   datasource:
     url: jdbc:sqlite:./target/timeline-test.db
+    driver-class-name: org.sqlite.JDBC
     hikari:
       maximum-pool-size: 1
+  sql:
+    init:
+      mode: never
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
 
 jwt:
   secret: test-secret-do-not-use-in-prod
+  access-expiration-ms: 900000
+  refresh-expiration-ms: 604800000
+
+cors:
+  origins: http://127.0.0.1:5173

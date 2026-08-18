@@ -2,6 +2,7 @@ package com.raisetech.timeline.service;
 
 import com.raisetech.timeline.domain.User;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
@@ -16,29 +17,36 @@ import org.springframework.stereotype.Service;
 @Service
 public class JwtService {
 
+  static final String ACCESS_TYPE = "access";
+
   private final SecretKey key;
-  private final long expirationMs;
+  private final long accessExpirationMs;
 
   public JwtService(
       @Value("${jwt.secret}") String secret,
-      @Value("${jwt.expiration-ms}") long expirationMs) {
+      @Value("${jwt.access-expiration-ms}") long accessExpirationMs) {
     this.key = Keys.hmacShaKeyFor(sha256(secret));
-    this.expirationMs = expirationMs;
+    this.accessExpirationMs = accessExpirationMs;
   }
 
-  public String issue(User user) {
+  public String issueAccess(User user) {
     Instant now = Instant.now();
     return Jwts.builder()
         .subject(String.valueOf(user.getId()))
+        .claim("typ", ACCESS_TYPE)
         .claim("username", user.getUsername())
         .issuedAt(Date.from(now))
-        .expiration(Date.from(now.plusMillis(expirationMs)))
+        .expiration(Date.from(now.plusMillis(accessExpirationMs)))
         .signWith(key)
         .compact();
   }
 
-  public Claims parse(String token) {
-    return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+  public Claims parseAccess(String token) {
+    Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+    if (!ACCESS_TYPE.equals(claims.get("typ", String.class))) {
+      throw new JwtException("not an access token");
+    }
+    return claims;
   }
 
   private static byte[] sha256(String secret) {

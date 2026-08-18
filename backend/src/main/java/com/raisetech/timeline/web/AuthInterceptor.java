@@ -36,7 +36,7 @@ public class AuthInterceptor implements HandlerInterceptor {
       return false;
     }
     try {
-      Claims claims = jwt.parse(token);
+      Claims claims = jwt.parseAccess(token);
       request.setAttribute(USER_ID_ATTR, Long.parseLong(claims.getSubject()));
       return true;
     } catch (JwtException | IllegalArgumentException ex) {

@@ -35,6 +35,10 @@ public class TimelineApplication {
         }
         if ("JWT_SECRET".equals(key)) {
           System.setProperty("jwt.secret", value);
+        } else if ("JWT_ACCESS_EXPIRATION_MS".equals(key)) {
+          System.setProperty("jwt.access-expiration-ms", value);
+        } else if ("JWT_REFRESH_EXPIRATION_MS".equals(key)) {
+          System.setProperty("jwt.refresh-expiration-ms", value);
         } else if ("PORT".equals(key)) {
           System.setProperty("server.port", value);
         } else {

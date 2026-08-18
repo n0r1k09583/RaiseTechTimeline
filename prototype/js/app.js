@@ -153,7 +153,7 @@
     return (
       comboNav() +
       '<header class="topbar">' +
-        '<a class="brand" href="home.html">課題提出</a>' +
+        '<a class="brand" href="home.html">課題提出<span class="brand-sub">タイムライン</span></a>' +
         '<form class="search" action="search.html" method="get">' +
           '<input type="text" name="q" placeholder="ユーザー名で検索" value="' + escapeHtml(qs("q")) + '" />' +
         "</form>" +
