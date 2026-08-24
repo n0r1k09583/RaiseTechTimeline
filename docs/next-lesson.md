@@ -32,10 +32,11 @@ N+1 にしていないことの説明は `docs/n-plus-one.md`。コメントと�
 
 | 役割 | 場所 |
 |------|------|
-| メソッド名と引数だけ | `PostMapper.java` / `CommentMapper.java`（`@Mapper` と `@Param`） |
-| SQL | `mapper/PostMapper.xml` / `CommentMapper.xml` |
+| メソッド名だけ | `mapper/*.java`（`@Mapper`。SQL は書かない） |
+| SQL をまとめる | `resources/mapper/*.xml`（`<sql>` で SELECT を共有） |
+| 読み込み設定 | `application.yml` の `mybatis.mapper-locations` と `type-aliases-package` |
 
-いいね・フォロー・プロフィールを足すときも同じ。`FollowMapper.xml`、`LikeMapper.xml` を新規に作り、複数行 SQL は XML 側に置く。
+いいね・フォロー・プロフィールを足すときも同じ。`LikeMapper.xml`、`FollowMapper.xml` を新規に作り、複数行 SQL は XML 側に置く。
 
 ---
 

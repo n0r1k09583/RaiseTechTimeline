@@ -10,12 +10,12 @@
     JOIN users u ON u.id = c.user_id
   </sql>
 
-  <select id="findById" resultType="com.raisetech.timeline.domain.Comment">
+  <select id="findById" resultType="Comment">
     <include refid="selectComment"/>
     WHERE c.id = #{id}
   </select>
 
-  <select id="listByPostId" resultType="com.raisetech.timeline.domain.Comment">
+  <select id="listByPostId" resultType="Comment">
     <include refid="selectComment"/>
     WHERE c.post_id = #{postId}
     ORDER BY c.created_at ASC, c.id ASC

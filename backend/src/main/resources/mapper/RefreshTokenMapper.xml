@@ -3,10 +3,14 @@
     "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.raisetech.timeline.mapper.RefreshTokenMapper">
 
-  <select id="findValidByHash" resultType="com.raisetech.timeline.domain.RefreshToken">
+  <sql id="selectRefreshToken">
     SELECT id, user_id, token_hash, expires_at, created_at
     FROM refresh_tokens
-    WHERE token_hash = #{tokenHash} AND expires_at > #{now}
+  </sql>
+
+  <select id="findValidByHash" resultType="RefreshToken">
+    <include refid="selectRefreshToken"/>
+    WHERE token_hash = #{tokenHash} AND expires_at &gt; #{now}
   </select>
 
   <insert id="insert" useGeneratedKeys="true" keyProperty="id">

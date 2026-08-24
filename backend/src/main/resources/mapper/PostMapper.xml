@@ -12,29 +12,37 @@
     JOIN users u ON u.id = p.user_id
   </sql>
 
+  <sql id="pageOlder">
+    <if test="beforeCreatedAt != null">
+      AND (p.created_at &lt; #{beforeCreatedAt}
+        OR (p.created_at = #{beforeCreatedAt} AND p.id &lt; #{beforeId}))
+    </if>
+  </sql>
+
+  <sql id="pageNewer">
+    <if test="afterCreatedAt != null">
+      AND (p.created_at &gt; #{afterCreatedAt}
+        OR (p.created_at = #{afterCreatedAt} AND p.id &gt; #{afterId}))
+    </if>
+  </sql>
+
   <sql id="tabFilter">
     <if test="tab == 'following'">
       AND p.user_id = #{viewerId}
     </if>
   </sql>
 
-  <select id="findById" resultType="com.raisetech.timeline.domain.Post">
+  <select id="findById" resultType="Post">
     <include refid="selectPost"/>
     WHERE p.id = #{id}
   </select>
 
-  <select id="list" resultType="com.raisetech.timeline.domain.Post">
+  <select id="list" resultType="Post">
     <include refid="selectPost"/>
     WHERE 1 = 1
     <include refid="tabFilter"/>
-    <if test="beforeCreatedAt != null">
-      AND (p.created_at &lt; #{beforeCreatedAt}
-        OR (p.created_at = #{beforeCreatedAt} AND p.id &lt; #{beforeId}))
-    </if>
-    <if test="afterCreatedAt != null">
-      AND (p.created_at &gt; #{afterCreatedAt}
-        OR (p.created_at = #{afterCreatedAt} AND p.id &gt; #{afterId}))
-    </if>
+    <include refid="pageOlder"/>
+    <include refid="pageNewer"/>
     ORDER BY p.created_at DESC, p.id DESC
     LIMIT #{limit}
   </select>

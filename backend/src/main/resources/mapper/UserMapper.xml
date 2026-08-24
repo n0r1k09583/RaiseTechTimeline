@@ -3,21 +3,23 @@
     "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.raisetech.timeline.mapper.UserMapper">
 
-  <select id="findById" resultType="com.raisetech.timeline.domain.User">
+  <sql id="selectUser">
     SELECT id, email, username, display_name, password_digest, created_at, updated_at
     FROM users
+  </sql>
+
+  <select id="findById" resultType="User">
+    <include refid="selectUser"/>
     WHERE id = #{id}
   </select>
 
-  <select id="findByEmail" resultType="com.raisetech.timeline.domain.User">
-    SELECT id, email, username, display_name, password_digest, created_at, updated_at
-    FROM users
+  <select id="findByEmail" resultType="User">
+    <include refid="selectUser"/>
     WHERE email = #{email}
   </select>
 
-  <select id="findByUsername" resultType="com.raisetech.timeline.domain.User">
-    SELECT id, email, username, display_name, password_digest, created_at, updated_at
-    FROM users
+  <select id="findByUsername" resultType="User">
+    <include refid="selectUser"/>
     WHERE username = #{username}
   </select>
 
