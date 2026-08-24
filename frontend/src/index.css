@@ -1,10 +1,12 @@
 :root {
-  --text: #111;
-  --muted: #6b6b6b;
-  --line: #e2e2e2;
-  --bg: #f7f7f5;
-  --danger: #b00020;
-  font-family: "Yu Gothic UI", "Hiragino Sans", Meiryo, sans-serif;
+  --text: #1a1612;
+  --muted: #7a7166;
+  --line: #d2c4a8;
+  --bg: #efe4cc;
+  --paper: #fbf6ea;
+  --danger: #b3392b;
+  --seal: #b3392b;
+  font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Times New Roman", serif;
   font-size: 16px;
 }
 
@@ -17,6 +19,23 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100%;
+}
+
+.fresh-bar,
+.notice-bar {
+  display: block;
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--text);
+  background: var(--paper);
+  color: var(--text);
+  font: inherit;
+  box-shadow: 4px 4px 0 rgba(26, 22, 18, 0.08);
+}
+
+.fresh-bar {
+  cursor: pointer;
 }
 
 .wrap {
@@ -57,6 +76,10 @@ h1 {
   color: var(--muted);
   font-size: 13px;
   margin: 0 0 16px;
+}
+
+.lead .btn.link {
+  margin-left: 8px;
 }
 
 .counter {
@@ -131,4 +154,235 @@ input {
 
 .demo button {
   margin: 4px 8px 0 0;
+}
+
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 16px 40px;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  margin: 0 -16px 16px;
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-btn {
+  border: 0;
+  background: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.topbar .brand,
+.topbar .brand-btn {
+  margin: 0;
+}
+
+.topbar-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.chip {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: #111;
+}
+
+.feed-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.feed-head {
+  padding: 16px 16px 0;
+}
+
+textarea,
+input[type="file"] {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  padding: 8px;
+  font: inherit;
+  background: #fff;
+}
+
+textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.counter.over {
+  color: var(--danger);
+}
+
+.btn.danger {
+  background: #b00020;
+  border-color: #b00020;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+  margin: 8px 0 0;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  color: var(--muted);
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.tab.active {
+  color: var(--text);
+  border-bottom-color: #333;
+  font-weight: 700;
+}
+
+.post {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.post:last-of-type {
+  border-bottom: 0;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 2px;
+  background: #eee;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  color: #333;
+}
+
+.meta {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.name {
+  font-weight: 700;
+  color: var(--text);
+  margin-right: 6px;
+}
+
+.handle {
+  color: var(--muted);
+}
+
+.body {
+  margin: 8px 0;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.post img.thumb {
+  max-width: 100%;
+  border: 1px solid var(--line);
+}
+
+.stats {
+  display: flex;
+  gap: 16px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.empty {
+  color: var(--muted);
+  text-align: center;
+  padding: 32px 8px;
+}
+
+.scroll-sentinel {
+  height: 1px;
+}
+
+.modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 16px;
+}
+
+.modal-bg.show {
+  display: flex;
+}
+
+.modal {
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 16px;
+  width: min(420px, 100%);
+}
+
+.modal h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.back-row {
+  margin: 0 0 12px;
+}
+
+.post-main {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.comment {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.comment:last-of-type {
+  border-bottom: 0;
+}
+
+.post-detail .post {
+  border-bottom: 0;
+  padding: 0;
 }

@@ -14,6 +14,7 @@ public class TimelineApplication {
 
   public static void main(String[] args) {
     loadDotEnv(Path.of(".env"));
+    loadDotEnv(Path.of("backend", ".env"));
     SpringApplication.run(TimelineApplication.class, args);
   }
 

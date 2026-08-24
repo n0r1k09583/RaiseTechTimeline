@@ -35,7 +35,7 @@ RaiseTechタイムラインの **画面側の技術は、タスクマネジメ�
 ## 使わないもの
 
 - おうち受付の Next.js / Express / SQLite 構成を、このSNSの画面スタックとしては使わない
-- Java / Spring Boot / Gradle / PostgreSQL（さらに前の課題）も使わない
+- おうち受付の Express をこのSNSの API には使わない。**本実装の API は Spring Boot + MyBatis + SQLite + Flyway**（画面の React / Vite は上表のまま）
 - 本番の常時公開、有料AWS
 
 ## 機能定義書の置き場

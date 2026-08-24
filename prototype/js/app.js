@@ -143,17 +143,12 @@
     });
   }
 
-  function comboNav() {
-    return '<nav class="combo-nav"><a class="on" href="home.html">課題提出</a></nav>';
-  }
-
   function headerHtml() {
     var me = currentUser();
-    if (!me) return comboNav();
+    if (!me) return "";
     return (
-      comboNav() +
       '<header class="topbar">' +
-        '<a class="brand" href="home.html">課題提出<span class="brand-sub">タイムライン</span></a>' +
+        '<a class="brand" href="timeline.html">課題提出<span class="brand-sub">タイムライン</span></a>' +
         '<form class="search" action="search.html" method="get">' +
           '<input type="text" name="q" placeholder="ユーザー名で検索" value="' + escapeHtml(qs("q")) + '" />' +
         "</form>" +
@@ -283,7 +278,7 @@
   function pages() {
     var page = document.body.getAttribute("data-page");
     var shell = document.getElementById("shell");
-    if (page !== "login" && page !== "signup" && page !== "home" && page !== "task" && page !== "reception") {
+    if (page !== "login" && page !== "signup") {
       requireAuth();
       if (shell) shell.insertAdjacentHTML("afterbegin", headerHtml(page));
       bindLogout();

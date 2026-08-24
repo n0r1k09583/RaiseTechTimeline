@@ -24,18 +24,18 @@ export function LoginPage({ onSuccess, onGoSignup }: Props) {
     setEmail(demoEmail);
     setPassword("password123");
     setError("");
+    void submit(demoEmail, "password123");
   }
 
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError("");
-    if (!email || !password) {
+  async function submit(nextEmail: string, nextPassword: string) {
+    if (!nextEmail || !nextPassword) {
       setError("メールアドレスとパスワードを入力してください");
       return;
     }
     setBusy(true);
+    setError("");
     try {
-      const res = await login(email, password);
+      const res = await login(nextEmail, nextPassword);
       onSuccess(res);
     } catch (err) {
       setPassword("");
@@ -43,6 +43,11 @@ export function LoginPage({ onSuccess, onGoSignup }: Props) {
     } finally {
       setBusy(false);
     }
+  }
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    await submit(email, password);
   }
 
   return (

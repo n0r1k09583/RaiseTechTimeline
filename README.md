@@ -2,41 +2,53 @@
 
 X（旧Twitter）風の **テキストベースSNS**（学習用）。受講生や個人が、複数アカウントで投稿・コメント・いいね・フォローし合う。
 
-いまは **本実装の認証（ユーザー登録・ログイン・JWT）** まで。タイムライン以降は次。
+いまは **認証・投稿・コメント** まで。いいね操作・フォロー・検索は次。ログイン後はタイムライン。自分の投稿は直後に反映し、続きは無限スクロール、他人の更新は約30秒おきに静かに取り直す。コメント数は投稿一覧の同じ SELECT で取る（N+1 にしない。[docs/n-plus-one.md](docs/n-plus-one.md)）。開発開始後に足した判断は [docs/dev-changes.md](docs/dev-changes.md)。
 
-### Webアプリ（認証）
+必要なもの: **Java 21**、**Node.js**（npm）。Maven のインストールは不要（`backend/mvnw` を使う）。`.env` は無くても起動する。
 
-ターミナルを2つ:
+### Webアプリ（提出先でも同じ手順）
+
+クローンしたリポジトリの中で実行する。自分の PC の絶対パスは書かない。**必ず各フォルダに入ってから**起動する（リポジトリ直下の `mvn` では SQLite の場所がずれる）。
+
+ターミナル1（API。先に起動）:
 
 ```powershell
-cd "C:\Users\user\課題提出\raisetech-timeline\backend"
-copy .env.example .env
+cd backend
+.\mvnw.cmd -Dmaven.test.skip=true spring-boot:run
+```
+
+macOS / Linux:
+
+```bash
+cd backend
+./mvnw -Dmaven.test.skip=true spring-boot:run
+```
+
+ターミナル2（画面）:
+
+```powershell
+cd frontend
 npm install
 npm run dev
 ```
 
-```powershell
-cd "C:\Users\user\課題提出\raisetech-timeline\frontend"
-npm install
-npm run dev
-```
-
-ブラウザ: http://localhost:5173  
+ブラウザ: **http://127.0.0.1:5173**（5173 が使われていたら止めてから再実行。勝手に 5174 にはしない）  
 API: http://127.0.0.1:8080/api/health
 
 試すアカウント（パスワードはすべて `password123`）: `yamada@example.com` / `hanako@example.com` / `ichiro@example.com`
 
+起動に失敗したら、`backend/data/timeline.db` を消して API をもう一度起動する（空の DB なら Flyway とデモユーザーが入る）。`.env` は任意。秘密鍵を Git に書かない。
+
 ### プロトタイプ（HTML）
 
 ```powershell
-cd "C:\Users\user\課題提出\raisetech-timeline\prototype"
+cd prototype
 node server.js
 ```
 
 http://127.0.0.1:5178/login.html
 
-
-提出用ファイルの保管先はおうち受付とは別で、フォルダ名は **課題提出2**（`C:\Users\user\課題提出2` とデスクトップの `課題提出2`）。
+提出用ファイルの保管先はおうち受付とは別で、フォルダ名は **タイムライン**。
 
 ---
 
@@ -68,7 +80,7 @@ http://127.0.0.1:5178/login.html
 
 ### 今回作らないもの
 
-ハッシュタグ検索、リポスト、引用、ブックマーク、DM、動画・複数枚画像、管理者画面、通報、パスワード再設定メール、アプリの本番公開（常時稼働のURL）。
+ハッシュタグ検索、リポスト、引用、ブックマーク、DM、動画・複数枚画像、管理者画面、通報、パスワード再設定メール、アプリの本番公開（常時稼働のURL）、WebSocket で投稿のたびに全員へ通知すること。
 
 ---
 
@@ -96,6 +108,7 @@ http://127.0.0.1:5178/login.html
 | [docs/requirements.md](docs/requirements.md) | 要件定義書 |
 | [docs/FEATURES/機能定義書.md](docs/FEATURES/機能定義書.md) | 機能定義書（FEATURES） |
 | [docs/screens.md](docs/screens.md) | 画面仕様書 |
+| [docs/dev-changes.md](docs/dev-changes.md) | 開発開始後に足した判断とプログラム |
 | [docs/er.md](docs/er.md) | ER図（users / posts / comments / likes / follows） |
 | [docs/tech-selection.md](docs/tech-selection.md) | 技術スタック（にゃんこタスクと同一バージョン） |
 | [docs/要件定義書.html](docs/要件定義書.html) | 提出用HTML（印刷／PDF） |
@@ -131,19 +144,9 @@ AWS は無料枠の範囲で後から触れる。常時稼働の本番URLは作�
 
 ---
 
-## 起動方法（実装後）
+## 起動方法
 
-実装が入ったら、にゃんこタスクと同じく Vite で起動する。
-
-```powershell
-cd "C:\Users\user\課題提出\raisetech-timeline"
-npm install
-npm run dev
-```
-
-ブラウザは **http://localhost:5173** を開く想定（実装時に README を更新する）。
-
-いまはアプリは動かない。先に `docs/要件定義書.html` をブラウザで開いて資料を確認する。
+手順は上の「Webアプリ」と同じ。画面だけ `npm run dev` しても API が無いとログインできない。バックエンドを先に起動する。
 
 ---
 

@@ -136,12 +136,9 @@ public class AuthService {
   }
 
   public void seedIfEmpty() {
-    if (users.count() > 0) {
-      return;
-    }
-    insertDemo("yamada@example.com", "yamada", "山田");
-    insertDemo("hanako@example.com", "hanako", "佐藤 花子");
-    insertDemo("ichiro@example.com", "ichiro", "鈴木 一郎");
+    ensureDemo("yamada@example.com", "yamada", "山田");
+    ensureDemo("hanako@example.com", "hanako", "佐藤 花子");
+    ensureDemo("ichiro@example.com", "ichiro", "鈴木 一郎");
   }
 
   private AuthResponse issueTokens(User user) {
@@ -154,6 +151,13 @@ public class AuthService {
     row.setCreatedAt(now);
     refreshTokens.insert(row);
     return new AuthResponse(jwt.issueAccess(user), refreshRaw, UserResponse.from(user));
+  }
+
+  private void ensureDemo(String email, String username, String displayName) {
+    if (users.findByUsername(username) != null || users.findByEmail(email) != null) {
+      return;
+    }
+    insertDemo(email, username, displayName);
   }
 
   private void insertDemo(String email, String username, String displayName) {

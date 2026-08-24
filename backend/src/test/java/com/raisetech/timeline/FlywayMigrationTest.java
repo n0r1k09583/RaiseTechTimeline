@@ -24,10 +24,10 @@ class FlywayMigrationTest {
   JdbcTemplate jdbc;
 
   @Test
-  void appliesV1UsersAndV2RefreshTokens() {
+  void appliesUsersRefreshTokensPostsAndComments() {
     assertNotNull(flyway.info().current());
-    assertEquals("2", flyway.info().current().getVersion().getVersion());
-    assertEquals(2, flyway.info().applied().length);
+    assertEquals("4", flyway.info().current().getVersion().getVersion());
+    assertEquals(4, flyway.info().applied().length);
 
     MigrateResult result = flyway.migrate();
     assertEquals(0, result.migrationsExecuted);
@@ -38,11 +38,19 @@ class FlywayMigrationTest {
     Integer refreshTokens = jdbc.queryForObject(
         "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'refresh_tokens'",
         Integer.class);
+    Integer posts = jdbc.queryForObject(
+        "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'posts'",
+        Integer.class);
+    Integer comments = jdbc.queryForObject(
+        "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'comments'",
+        Integer.class);
     Integer history = jdbc.queryForObject(
         "SELECT COUNT(*) FROM flyway_schema_history WHERE success = 1",
         Integer.class);
     assertEquals(1, users);
     assertEquals(1, refreshTokens);
-    assertEquals(2, history);
+    assertEquals(1, posts);
+    assertEquals(1, comments);
+    assertEquals(4, history);
   }
 }

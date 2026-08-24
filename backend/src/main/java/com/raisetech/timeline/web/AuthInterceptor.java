@@ -1,10 +1,13 @@
 package com.raisetech.timeline.web;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.raisetech.timeline.dto.ErrorResponse;
 import com.raisetech.timeline.service.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -15,9 +18,11 @@ public class AuthInterceptor implements HandlerInterceptor {
   public static final String USER_ID_ATTR = "userId";
 
   private final JwtService jwt;
+  private final ObjectMapper objectMapper;
 
-  public AuthInterceptor(JwtService jwt) {
+  public AuthInterceptor(JwtService jwt, ObjectMapper objectMapper) {
     this.jwt = jwt;
+    this.objectMapper = objectMapper;
   }
 
   @Override
@@ -45,10 +50,10 @@ public class AuthInterceptor implements HandlerInterceptor {
     }
   }
 
-  private static void writeUnauthorized(HttpServletResponse response, String message) throws Exception {
-    response.setStatus(401);
+  private void writeUnauthorized(HttpServletResponse response, String message) throws Exception {
+    response.setStatus(HttpStatus.UNAUTHORIZED.value());
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setCharacterEncoding("UTF-8");
-    response.getWriter().write("{\"error\":\"" + message + "\"}");
+    objectMapper.writeValue(response.getWriter(), new ErrorResponse(HttpStatus.UNAUTHORIZED, message));
   }
 }

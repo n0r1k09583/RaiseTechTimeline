@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.raisetech.timeline.mapper.PostMapper">
+
+  <sql id="selectPost">
+    SELECT p.id, p.user_id, p.body, p.image_path, p.created_at, p.updated_at,
+           u.username, u.display_name,
+           (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count,
+           0 AS like_count
+    FROM posts p
+    JOIN users u ON u.id = p.user_id
+  </sql>
+
+  <sql id="tabFilter">
+    <if test="tab == 'following'">
+      AND p.user_id = #{viewerId}
+    </if>
+  </sql>
+
+  <select id="findById" resultType="com.raisetech.timeline.domain.Post">
+    <include refid="selectPost"/>
+    WHERE p.id = #{id}
+  </select>
+
+  <select id="list" resultType="com.raisetech.timeline.domain.Post">
+    <include refid="selectPost"/>
+    WHERE 1 = 1
+    <include refid="tabFilter"/>
+    <if test="beforeCreatedAt != null">
+      AND (p.created_at &lt; #{beforeCreatedAt}
+        OR (p.created_at = #{beforeCreatedAt} AND p.id &lt; #{beforeId}))
+    </if>
+    <if test="afterCreatedAt != null">
+      AND (p.created_at &gt; #{afterCreatedAt}
+        OR (p.created_at = #{afterCreatedAt} AND p.id &gt; #{afterId}))
+    </if>
+    ORDER BY p.created_at DESC, p.id DESC
+    LIMIT #{limit}
+  </select>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO posts (user_id, body, image_path, created_at, updated_at)
+    VALUES (
+      #{userId},
+      #{body},
+      #{imagePath},
+      COALESCE(#{createdAt}, datetime('now')),
+      COALESCE(#{createdAt}, datetime('now'))
+    )
+  </insert>
+
+  <update id="update">
+    UPDATE posts
+    SET body = #{body},
+        image_path = #{imagePath},
+        updated_at = datetime('now')
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE FROM posts WHERE id = #{id}
+  </delete>
+
+  <select id="count" resultType="int">
+    SELECT COUNT(*) FROM posts
+  </select>
+</mapper>

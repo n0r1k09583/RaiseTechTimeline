@@ -1,11 +1,13 @@
 package com.raisetech.timeline.config;
 
 import com.raisetech.timeline.web.AuthInterceptor;
+import java.nio.file.Path;
 import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
@@ -13,12 +15,15 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
   private final AuthInterceptor authInterceptor;
   private final String[] origins;
+  private final Path uploadDir;
 
   public WebMvcConfig(
       AuthInterceptor authInterceptor,
-      @Value("${cors.origins:http://localhost:5173,http://127.0.0.1:5173}") String origins) {
+      @Value("${cors.origins:http://localhost:5173,http://127.0.0.1:5173}") String origins,
+      @Value("${app.upload-dir:./uploads}") String uploadDir) {
     this.authInterceptor = authInterceptor;
     this.origins = Arrays.stream(origins.split(",")).map(String::trim).toArray(String[]::new);
+    this.uploadDir = Path.of(uploadDir).toAbsolutePath().normalize();
   }
 
   @Override
@@ -27,6 +32,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
         .allowedOrigins(origins)
         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
         .allowedHeaders("*");
+    registry.addMapping("/uploads/**")
+        .allowedOrigins(origins)
+        .allowedMethods("GET", "OPTIONS")
+        .allowedHeaders("*");
+  }
+
+  @Override
+  public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    registry.addResourceHandler("/uploads/**")
+        .addResourceLocations(uploadDir.toUri().toString());
   }
 
   @Override
