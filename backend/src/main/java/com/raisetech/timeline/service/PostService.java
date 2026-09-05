@@ -9,6 +9,8 @@ import com.raisetech.timeline.mapper.PostMapper;
 import com.raisetech.timeline.mapper.UserMapper;
 import com.raisetech.timeline.web.ApiException;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class PostService {
 
+  private static final Logger log = LoggerFactory.getLogger(PostService.class);
   private static final int DEFAULT_LIMIT = 20;
   private static final int MAX_LIMIT = 50;
   private static final int BODY_MAX = 280;
@@ -74,6 +77,7 @@ public class PostService {
     post.setBody(text);
     post.setImagePath(images.save(image));
     posts.insert(post);
+    log.info("投稿を作成 userId={} postId={}", userId, post.getId());
     return PostResponse.from(require(post.getId()), userId);
   }
 
@@ -97,6 +101,7 @@ public class PostService {
     comments.deleteByPostId(id);
     posts.deleteById(id);
     images.delete(existing.getImagePath());
+    log.info("投稿を削除 userId={} postId={}", userId, id);
   }
 
   public void seedIfEmpty() {
@@ -131,6 +136,7 @@ public class PostService {
   private Post requireOwned(long id, long userId, String message) {
     Post post = require(id);
     if (post.getUserId() == null || post.getUserId() != userId) {
+      log.warn("投稿の権限なし userId={} postId={}", userId, id);
       throw new ApiException(HttpStatus.FORBIDDEN, message);
     }
     return post;

@@ -1,6 +1,14 @@
 server:
   port: ${PORT:8080}
   address: 127.0.0.1
+  tomcat:
+    basedir: .
+    accesslog:
+      enabled: true
+      directory: logs
+      prefix: access
+      suffix: .log
+      pattern: '%h %l %u %t "%r" %s %b %D'
   error:
     include-message: never
     include-stacktrace: never
@@ -40,5 +48,22 @@ jwt:
 cors:
   origins: http://localhost:5173,http://127.0.0.1:5173
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+
 app:
   upload-dir: ${UPLOAD_DIR:./uploads}
+
+# 課題は backend/logs のファイル確認。Datadog などは入れない。
+# DEBUG は調査するときだけ com.raisetech.timeline を上げる。
+logging:
+  file:
+    path: logs
+  level:
+    root: INFO
+    com.raisetech.timeline: INFO

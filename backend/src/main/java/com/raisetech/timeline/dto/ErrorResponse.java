@@ -1,8 +1,12 @@
 package com.raisetech.timeline.dto;
 
 import com.raisetech.timeline.web.ErrorCodes;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.http.HttpStatus;
 
+@Schema(
+    name = "ErrorResponse",
+    description = "エラー時の JSON。画面は error を出す。code は機械向け。status は HTTP ステータスと揃える。")
 public class ErrorResponse {
 
   private final int status;
@@ -20,14 +24,17 @@ public class ErrorResponse {
     this.error = error == null || error.isBlank() ? fallback(resolved) : error;
   }
 
+  @Schema(description = "HTTP ステータス", example = "401")
   public int getStatus() {
     return status;
   }
 
+  @Schema(description = "機械向けコード（UNAUTHORIZED, VALIDATION, FORBIDDEN など）", example = "UNAUTHORIZED")
   public String getCode() {
     return code;
   }
 
+  @Schema(description = "画面に出す日本語", example = "ログインしてください")
   public String getError() {
     return error;
   }

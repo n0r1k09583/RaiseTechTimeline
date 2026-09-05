@@ -56,6 +56,9 @@ export function LoginPage({ onSuccess, onGoSignup }: Props) {
         課題提出
         <span className="brand-sub">タイムライン</span>
       </p>
+      <p className="lead">
+        テキストと画像で投稿し、コメントする学習用SNSです。投稿・コメントはログイン後だけ使えます。
+      </p>
       <section className="card">
         <h1>ログイン</h1>
         <p className="demo">
@@ -93,9 +96,9 @@ export function LoginPage({ onSuccess, onGoSignup }: Props) {
         </form>
         <p className="hint">
           初めての人は{" "}
-          <button type="button" className="btn link" onClick={onGoSignup}>
+          <a className="btn link" href="/signup" onClick={(e) => { e.preventDefault(); onGoSignup(); }}>
             新規登録
-          </button>
+          </a>
         </p>
       </section>
     </main>

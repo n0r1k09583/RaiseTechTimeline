@@ -10,6 +10,8 @@ import com.raisetech.timeline.mapper.PostMapper;
 import com.raisetech.timeline.mapper.UserMapper;
 import com.raisetech.timeline.web.ApiException;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CommentService {
 
+  private static final Logger log = LoggerFactory.getLogger(CommentService.class);
   private static final int BODY_MAX = 140;
 
   private final CommentMapper comments;
@@ -45,6 +48,7 @@ public class CommentService {
     comment.setUserId(userId);
     comment.setBody(requireBody(body));
     comments.insert(comment);
+    log.info("コメントを作成 userId={} postId={} commentId={}", userId, postId, comment.getId());
     return CommentResponse.from(require(comment.getId()), userId);
   }
 
@@ -52,9 +56,11 @@ public class CommentService {
   public void delete(long userId, long id) {
     Comment existing = require(id);
     if (existing.getUserId() == null || existing.getUserId() != userId) {
+      log.warn("コメントの権限なし userId={} commentId={}", userId, id);
       throw new ApiException(HttpStatus.FORBIDDEN, "自分のコメントだけ削除できます");
     }
     comments.deleteById(id);
+    log.info("コメントを削除 userId={} commentId={}", userId, id);
   }
 
   public void seedIfEmpty() {

@@ -13,13 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ContextConfiguration(initializers = DeleteSqliteTestDb.class)
 class CommentApiTest {
 
   @Autowired
@@ -101,6 +99,18 @@ class CommentApiTest {
             .header("Authorization", "Bearer " + yamada))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.error").value("投稿が見つかりません"));
+  }
+
+  @Test
+  void rejectsTooLongComment() throws Exception {
+    String yamada = token("yamada@example.com");
+    long postId = createPost(yamada, "長いコメント拒否");
+    mockMvc.perform(post("/api/posts/" + postId + "/comments")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"body\":\"" + "あ".repeat(141) + "\"}")
+            .header("Authorization", "Bearer " + yamada))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value("コメントは1〜140文字です"));
   }
 
   private long createPost(String token, String body) throws Exception {

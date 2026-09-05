@@ -17,13 +17,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ContextConfiguration(initializers = DeleteSqliteTestDb.class)
 class PostApiTest {
 
   @Autowired
@@ -33,13 +32,13 @@ class PostApiTest {
   ObjectMapper objectMapper;
 
   @Test
-  void postsRequireLogin() throws Exception {
+  void 投稿APIはログイン必須() throws Exception {
     mockMvc.perform(get("/api/posts"))
         .andExpect(status().isUnauthorized());
   }
 
   @Test
-  void createListEditDeleteAndRejectOthers() throws Exception {
+  void 自分の投稿は編集削除でき他人は403() throws Exception {
     String yamada = token("yamada@example.com");
     String hanako = token("hanako@example.com");
 
@@ -133,13 +132,44 @@ class PostApiTest {
   }
 
   @Test
-  void rejectsEmptyBody() throws Exception {
+  void 空本文は投稿できない() throws Exception {
     String yamada = token("yamada@example.com");
     mockMvc.perform(multipart("/api/posts")
             .param("body", "   ")
             .header("Authorization", "Bearer " + yamada))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error").value("本文は1〜280文字です"));
+  }
+
+  @Test
+  void 非対応画像と5MB超は拒否する() throws Exception {
+    String yamada = token("yamada@example.com");
+    MockMultipartFile gif =
+        new MockMultipartFile("image", "x.gif", "image/gif", new byte[] {1, 2, 3});
+    mockMvc.perform(multipart("/api/posts")
+            .file(gif)
+            .param("body", "画像の確認")
+            .header("Authorization", "Bearer " + yamada))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.error").value("JPEG / PNG / WebP のみです"));
+
+    MockMultipartFile huge =
+        new MockMultipartFile("image", "huge.jpg", "image/jpeg", new byte[5 * 1024 * 1024 + 1]);
+    mockMvc.perform(multipart("/api/posts")
+            .file(huge)
+            .param("body", "大きすぎる画像")
+            .header("Authorization", "Bearer " + yamada))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value("画像は5MBまでです"));
+  }
+
+  @Test
+  void missingPostIsNotFound() throws Exception {
+    String yamada = token("yamada@example.com");
+    mockMvc.perform(get("/api/posts/999999").header("Authorization", "Bearer " + yamada))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
   }
 
   private String token(String email) throws Exception {

@@ -1,7 +1,9 @@
 package com.raisetech.timeline.dto;
 
 import com.raisetech.timeline.domain.User;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "公開してよいユーザー情報。password_digest は出さない。")
 public class UserResponse {
 
   private long id;

@@ -7,6 +7,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
 public class AuthInterceptor implements HandlerInterceptor {
 
   public static final String USER_ID_ATTR = "userId";
+
+  private static final Logger log = LoggerFactory.getLogger(AuthInterceptor.class);
 
   private final JwtService jwt;
   private final ObjectMapper objectMapper;
@@ -37,6 +41,7 @@ public class AuthInterceptor implements HandlerInterceptor {
       token = header.substring(7);
     }
     if (token.isEmpty()) {
+      log.warn("未ログイン path={}", request.getRequestURI());
       writeUnauthorized(response, "ログインしてください");
       return false;
     }
@@ -45,6 +50,7 @@ public class AuthInterceptor implements HandlerInterceptor {
       request.setAttribute(USER_ID_ATTR, Long.parseLong(claims.getSubject()));
       return true;
     } catch (JwtException | IllegalArgumentException ex) {
+      log.warn("トークン無効 path={}", request.getRequestURI());
       writeUnauthorized(response, "トークンが無効です。再度ログインしてください");
       return false;
     }

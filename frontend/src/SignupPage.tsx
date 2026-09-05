@@ -37,6 +37,9 @@ export function SignupPage({ onSuccess, onGoLogin }: Props) {
         課題提出
         <span className="brand-sub">タイムライン</span>
       </p>
+      <p className="lead">
+        課題提出のタイムラインにアカウントを作ります。投稿・コメントは登録後に使えます。
+      </p>
       <section className="card">
         <h1>新規登録</h1>
         <form onSubmit={onSubmit}>
@@ -93,9 +96,9 @@ export function SignupPage({ onSuccess, onGoLogin }: Props) {
         </form>
         <p className="hint">
           すでにアカウントがある人は{" "}
-          <button type="button" className="btn link" onClick={onGoLogin}>
+          <a className="btn link" href="/login" onClick={(e) => { e.preventDefault(); onGoLogin(); }}>
             ログイン
-          </button>
+          </a>
         </p>
       </section>
     </main>

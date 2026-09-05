@@ -88,7 +88,7 @@ Flyway `V3__create_posts.sql`（`posts`）、`V4__create_comments.sql`（`commen
 いいねの操作、フォロー、ユーザー検索、プロフィール、S3、WebSocket。  
 いいね数はカードに 0 と出す。いいね表はまだ作らない。
 
-**次回**（プロフィール表示・編集、フォロー・フォロワー）は [next-lesson.md](./next-lesson.md)。フォルダを開いたらそこから再開する。
+**これから**は [next-lesson.md](./next-lesson.md)。プロフィール／フォローのあと、最終回はユーザー検索、「フォロー中」、画像の全体調整。S3 バケットは作らない。
 
 ---
 

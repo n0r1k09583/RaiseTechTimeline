@@ -1,17 +1,38 @@
 # バックエンド（認証と投稿）
 
-いま実装しているのは **ユーザー登録・ログイン・JWT** と **投稿（一覧・作成・編集・削除）**。コメント・いいね・フォローの API はまだ無い。開発開始後の判断は `docs/dev-changes.md`。
+いま実装しているのは **ユーザー登録・ログイン・JWT**、**投稿（一覧・作成・編集・削除）**、**コメント**。いいね操作・フォロー・検索はまだ。開発開始後の判断は `docs/dev-changes.md`。API 仕様の自動生成は `docs/openapi.md`。
 
 ## 起動
 
 ```powershell
 cd backend
-mvn spring-boot:run
+.\mvnw.cmd -Dmaven.test.skip=true spring-boot:run
 ```
 
 http://127.0.0.1:8080/api/health
 
+API 仕様書（コードから自動生成。コントローラを直して再起動すると更新される）:
+
+- OpenAPI JSON: http://127.0.0.1:8080/v3/api-docs
+- Swagger UI: http://127.0.0.1:8080/swagger-ui.html
+
 JWT の秘密鍵は `.env` の `JWT_SECRET`。Git に書かない。
+
+## テスト
+
+本番の `data/timeline.db` には書かない。テストはメモリの H2（SQLite 互換）。考え方は `docs/testing.md`（ブラックボックス／ホワイトボックス、境界値）。
+
+```powershell
+cd backend
+.\mvnw.cmd test
+```
+
+```powershell
+cd frontend
+npm test
+```
+
+E2E はしない。
 
 ## API
 
@@ -23,11 +44,14 @@ JWT の秘密鍵は `.env` の `JWT_SECRET`。Git に書かない。
 | POST   | `/api/logout`     | 不要   | リフレッシュを破棄。204                                                 |
 | GET    | `/api/me`         | Bearer | 今のユーザー。トークンが無い／壊れていると 401                          |
 | GET    | `/api/health`     | 不要   | 起動確認                                                                |
-| GET    | `/api/posts`      | Bearer | タイムライン。新しい順。無限スクロール用の `before*`、差分用の `after*` |
-| GET    | `/api/posts/{id}` | Bearer | 1件                                                                     |
-| POST   | `/api/posts`      | Bearer | 作成（multipart。本文必須、画像任意）                                   |
-| PATCH  | `/api/posts/{id}` | Bearer | 自分の投稿だけ編集                                                      |
-| DELETE | `/api/posts/{id}` | Bearer | 自分の投稿だけ削除。204                                                 |
+| GET    | `/api/posts`                    | Bearer | タイムライン。新しい順。無限スクロール用の `before*`、差分用の `after*` |
+| GET    | `/api/posts/{id}`               | Bearer | 1件                                                                     |
+| POST   | `/api/posts`                    | Bearer | 作成（multipart。本文必須、画像任意）                                   |
+| PATCH  | `/api/posts/{id}`               | Bearer | 自分の投稿だけ編集                                                      |
+| DELETE | `/api/posts/{id}`               | Bearer | 自分の投稿だけ削除。204                                                 |
+| GET    | `/api/posts/{id}/comments`      | Bearer | コメント一覧。古い順                                                    |
+| POST   | `/api/posts/{id}/comments`      | Bearer | コメント作成。JSON `{ body }`。201                                      |
+| DELETE | `/api/comments/{id}`            | Bearer | 自分のコメントだけ削除。204                                             |
 
 ログイン・登録の成功レスポンス:
 
@@ -67,4 +91,4 @@ N+1 問題: 親を 1 回取ったあと、各レコードごとに子を取る�
 1. **サブクエリ / JOIN で一括** … 投稿と件数を 1 本の SQL で取る
 2. **バッチ** … `WHERE post_id IN (...)` で件数をまとめて取り、メモリでくっつける
 
-いまの一覧は同じ SELECT に `0 AS comment_count` / `0 AS like_count` を乗せている。テーブルを足すときも投稿ごとに問い合わせない。
+いまの一覧は同じ SELECT にコメント件数のサブクエリと `0 AS like_count` を乗せている。いいね表を足すときも投稿ごとに問い合わせない。

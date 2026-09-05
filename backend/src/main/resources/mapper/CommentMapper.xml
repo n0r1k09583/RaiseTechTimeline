@@ -27,7 +27,7 @@
       #{postId},
       #{userId},
       #{body},
-      COALESCE(#{createdAt}, datetime('now'))
+      COALESCE(#{createdAt}, CURRENT_TIMESTAMP)
     )
   </insert>
 

@@ -24,6 +24,11 @@ public class ApiExceptionHandler {
 
   @ExceptionHandler(ApiException.class)
   public ResponseEntity<ErrorResponse> handleApi(ApiException ex) {
+    if (ex.getStatus().is5xxServerError()) {
+      log.error("APIエラー status={} message={}", ex.getStatus().value(), ex.getMessage(), ex);
+    } else {
+      log.warn("APIエラー status={} message={}", ex.getStatus().value(), ex.getMessage());
+    }
     return json(ex.getStatus(), ex.getMessage());
   }
 

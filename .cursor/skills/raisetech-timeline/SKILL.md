@@ -45,11 +45,15 @@ description: >-
 - ログイン／新規登録／ログアウト。成功後は **タイムライン**（ログイン成功の仮画面は使わない）
 - 投稿の作成・編集・削除。自分の操作直後はすぐ反映。他人の変更は約30秒おきに静かに取り直す。WebSocket の一件通知は使わない。続きは無限スクロール（「もっと見る」は置かない）
 - コメントの作成・一覧・自分の削除。件数は投稿と同じ SELECT のサブクエリで出す（N+1 にしない）。投稿詳細から読む
-- いいね操作・フォロー・プロフィール画面は **まだ**。件数の枠は `0 AS like_count`
-- JWT は **アクセス（15分）＋リフレッシュ（7日、DB保存）**。`POST /api/refresh` と `POST /api/logout`
-- マイグレーション: `V1` users / `V2` refresh_tokens / `V3` posts / `V4` comments。likes・follows は次回
-- MyBatis の SQL は XML（`mapper/*.xml`）。複数行の `@Select` は使わない
-- 次回（プロフィール表示・編集、フォロー／フォロワー）は `docs/next-lesson.md`
+- いいね操作・フォロー・プロフィール・検索は **まだ**。件数の枠は `0 AS like_count`
+- 画像はローカル `uploads/`。S3 バケットは作らない（常時稼働・有料禁止）
+- API 仕様書は springdoc。`/v3/api-docs` と `/swagger-ui.html`。コントローラを直して再起動すると更新される。解説は `docs/openapi.md`
+- 画面は Vite + React の **SPA**（Next.js の SSG/SSR にしない）。公開は `/login` と `/signup` を検索対象。ログイン後のタイムラインは `noindex`
+- ログは `backend/logs/`（アクセス／アプリ／エラー）。Datadog は入れない。パスワードはログに出さない。解説は `docs/logging.md`
+- テストは H2（本番 SQLite に書かない）。テストメソッド名は日本語にしてよい。Checkstyle は `backend/checkstyle.xml`。E2E なし。解説は `docs/testing.md`
+- マイグレーション: `V1` users / `V2` refresh_tokens / `V3` posts / `V4` comments。likes・follows はこれから
+- MyBatis の SQL はすべて XML（`resources/mapper/*.xml`）。Java に `@Select` を書かない。設定は `application.yml` の `mybatis.mapper-locations`
+- 再開は `docs/next-lesson.md`（プロフィール／フォローのあと、最終回は検索・「フォロー中」・画像の全体調整）
 - 参考はタスクマネジメント。プラットフォームバックエンドは見ない
 
 ## やってはいけないこと

@@ -4,9 +4,45 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ログイン — 課題提出</title>
+    <meta
+      name="description"
+      content="課題提出のタイムライン。テキストと画像で投稿し、コメントする学習用SNS。投稿・コメントはログイン後だけ使えます。"
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="/login" />
+    <meta property="og:locale" content="ja_JP" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="ログイン — 課題提出 タイムライン" />
+    <meta
+      property="og:description"
+      content="課題提出のタイムライン。テキストと画像で投稿し、コメントする学習用SNS。投稿・コメントはログイン後だけ使えます。"
+    />
+    <meta name="twitter:card" content="summary" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "課題提出 タイムライン",
+        "applicationCategory": "SocialNetworkingApplication",
+        "operatingSystem": "Web",
+        "inLanguage": "ja",
+        "description": "テキストと画像で投稿し、コメントする学習用SNS。投稿・コメントはログイン後だけ使えます。",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "JPY" }
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main>
+        <h1>課題提出</h1>
+        <p>タイムライン。テキストと画像で投稿し、コメントする学習用SNS。</p>
+        <p>投稿・コメントはログイン後だけ使えます。ログイン画面は検索に出します。</p>
+        <p><a href="/login">ログイン</a>　<a href="/signup">新規登録</a></p>
+      </main>
+    </div>
+    <noscript>
+      <p>このアプリは JavaScript が必要です。<a href="/login">ログイン</a>または<a href="/signup">新規登録</a>へ。</p>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

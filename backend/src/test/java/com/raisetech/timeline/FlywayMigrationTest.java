@@ -2,19 +2,16 @@ package com.raisetech.timeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.output.MigrateResult;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest
-@AutoConfigureMockMvc
-@ContextConfiguration(initializers = DeleteSqliteTestDb.class)
 class FlywayMigrationTest {
 
   @Autowired
@@ -24,7 +21,7 @@ class FlywayMigrationTest {
   JdbcTemplate jdbc;
 
   @Test
-  void appliesUsersRefreshTokensPostsAndComments() {
+  void appliesUsersRefreshTokensPostsAndCommentsOnH2() {
     assertNotNull(flyway.info().current());
     assertEquals("4", flyway.info().current().getVersion().getVersion());
     assertEquals(4, flyway.info().applied().length);
@@ -32,25 +29,13 @@ class FlywayMigrationTest {
     MigrateResult result = flyway.migrate();
     assertEquals(0, result.migrationsExecuted);
 
-    Integer users = jdbc.queryForObject(
-        "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'users'",
-        Integer.class);
-    Integer refreshTokens = jdbc.queryForObject(
-        "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'refresh_tokens'",
-        Integer.class);
-    Integer posts = jdbc.queryForObject(
-        "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'posts'",
-        Integer.class);
-    Integer comments = jdbc.queryForObject(
-        "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'comments'",
-        Integer.class);
-    Integer history = jdbc.queryForObject(
-        "SELECT COUNT(*) FROM flyway_schema_history WHERE success = 1",
-        Integer.class);
-    assertEquals(1, users);
-    assertEquals(1, refreshTokens);
-    assertEquals(1, posts);
-    assertEquals(1, comments);
-    assertEquals(4, history);
+    Integer users = jdbc.queryForObject("SELECT COUNT(*) FROM users", Integer.class);
+    Integer refreshTokens = jdbc.queryForObject("SELECT COUNT(*) FROM refresh_tokens", Integer.class);
+    Integer posts = jdbc.queryForObject("SELECT COUNT(*) FROM posts", Integer.class);
+    Integer comments = jdbc.queryForObject("SELECT COUNT(*) FROM comments", Integer.class);
+    assertTrue(users != null && users >= 3);
+    assertTrue(refreshTokens != null && refreshTokens >= 0);
+    assertTrue(posts != null && posts >= 1);
+    assertTrue(comments != null && comments >= 1);
   }
 }

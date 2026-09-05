@@ -15,6 +15,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.HexFormat;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuthService {
 
+  private static final Logger log = LoggerFactory.getLogger(AuthService.class);
   private static final Pattern USERNAME = Pattern.compile("^[a-z0-9_]{3,20}$");
   private static final Pattern EMAIL = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
   private static final SecureRandom RANDOM = new SecureRandom();
@@ -82,7 +85,7 @@ public class AuthService {
     user.setDisplayName(displayName);
     user.setPasswordDigest(passwords.encode(password));
     users.insert(user);
-
+    log.info("新規登録 userId={} username={}", user.getId(), username);
     return issueTokens(users.findById(user.getId()));
   }
 
@@ -95,8 +98,10 @@ public class AuthService {
     }
     User user = users.findByEmail(email);
     if (user == null || !passwords.matches(password, user.getPasswordDigest())) {
+      log.warn("ログイン失敗 email={}", email);
       throw new ApiException(HttpStatus.UNAUTHORIZED, "メールアドレスまたはパスワードが違います");
     }
+    log.info("ログイン成功 userId={} username={}", user.getId(), user.getUsername());
     return issueTokens(user);
   }
 
@@ -109,6 +114,7 @@ public class AuthService {
     long now = System.currentTimeMillis();
     RefreshToken stored = refreshTokens.findValidByHash(sha256Hex(raw), now);
     if (stored == null) {
+      log.warn("リフレッシュトークンが無効");
       throw new ApiException(HttpStatus.UNAUTHORIZED, "リフレッシュトークンが無効です。再度ログインしてください");
     }
     refreshTokens.deleteById(stored.getId());
@@ -116,6 +122,7 @@ public class AuthService {
     if (user == null) {
       throw new ApiException(HttpStatus.UNAUTHORIZED, "ユーザーが見つかりません");
     }
+    log.info("トークン更新 userId={}", user.getId());
     return issueTokens(user);
   }
 
@@ -125,6 +132,7 @@ public class AuthService {
       return;
     }
     refreshTokens.deleteByHash(sha256Hex(raw));
+    log.info("ログアウト");
   }
 
   public UserResponse me(long userId) {

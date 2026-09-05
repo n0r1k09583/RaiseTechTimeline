@@ -1,7 +1,9 @@
 package com.raisetech.timeline.dto;
 
 import com.raisetech.timeline.domain.Comment;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "コメント1件。mine が true なら自分ので削除できる。")
 public class CommentResponse {
 
   private long id;

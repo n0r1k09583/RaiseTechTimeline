@@ -1,7 +1,9 @@
 package com.raisetech.timeline.dto;
 
 import com.raisetech.timeline.domain.Post;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "投稿1件。imageUrl は今は /uploads/ファイル名。S3 に差し替えるときはこの URL だけ変える。")
 public class PostResponse {
 
   private long id;

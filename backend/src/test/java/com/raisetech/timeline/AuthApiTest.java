@@ -12,13 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ContextConfiguration(initializers = DeleteSqliteTestDb.class)
 class AuthApiTest {
 
   @Autowired
@@ -96,6 +94,8 @@ class AuthApiTest {
                 }
                 """))
         .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.status").value(401))
+        .andExpect(jsonPath("$.code").value("UNAUTHORIZED"))
         .andExpect(jsonPath("$.error").value("メールアドレスまたはパスワードが違います"));
 
     mockMvc.perform(get("/api/me"))
@@ -108,6 +108,38 @@ class AuthApiTest {
 
     mockMvc.perform(get("/api/me").header("Authorization", "Bearer " + refreshToken))
         .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void signupRejectsInvalidFields() throws Exception {
+    mockMvc.perform(post("/api/signup")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("""
+                {
+                  "username": "ab",
+                  "displayName": "新規",
+                  "email": "bad",
+                  "password": "short",
+                  "confirm": "nope"
+                }
+                """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("VALIDATION"))
+        .andExpect(jsonPath("$.error").value("ユーザー名は3〜20文字の半角英小文字・数字・_です"));
+
+    mockMvc.perform(post("/api/signup")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("""
+                {
+                  "username": "valid_user",
+                  "displayName": "新規",
+                  "email": "valid_user@example.com",
+                  "password": "password123",
+                  "confirm": "different1"
+                }
+                """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value("パスワードが一致しません"));
   }
 
   @Test
