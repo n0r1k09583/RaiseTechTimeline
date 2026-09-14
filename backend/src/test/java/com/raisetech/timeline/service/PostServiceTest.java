@@ -36,7 +36,7 @@ class PostServiceTest {
   CommentMapper comments;
 
   @Mock
-  ImageStorage images;
+  ImageStore images;
 
   PostService service;
 

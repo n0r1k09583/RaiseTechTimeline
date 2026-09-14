@@ -1,16 +1,20 @@
 package com.raisetech.timeline.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.raisetech.timeline.service.JwtService;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.MDC;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -25,6 +29,11 @@ class AuthInterceptorTest {
   @BeforeEach
   void setUp() {
     interceptor = new AuthInterceptor(jwt, new ObjectMapper());
+  }
+
+  @AfterEach
+  void tearDown() {
+    MDC.clear();
   }
 
   @Test
@@ -72,6 +81,20 @@ class AuthInterceptorTest {
 
     assertThat(interceptor.preHandle(request, response, new Object())).isFalse();
     assertThat(response.getContentAsString()).contains("ログインしてください");
+  }
+
+  @Test
+  void 有効トークンはuserIdをMDCに載せる() throws Exception {
+    Claims claims = mock(Claims.class);
+    when(claims.getSubject()).thenReturn("7");
+    when(jwt.parseAccess("good")).thenReturn(claims);
+    MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/posts");
+    request.addHeader("Authorization", "Bearer good");
+    MockHttpServletResponse response = new MockHttpServletResponse();
+
+    assertThat(interceptor.preHandle(request, response, new Object())).isTrue();
+    assertThat(request.getAttribute(AuthInterceptor.USER_ID_ATTR)).isEqualTo(7L);
+    assertThat(MDC.get("userId")).isEqualTo("7");
   }
 
   @Test

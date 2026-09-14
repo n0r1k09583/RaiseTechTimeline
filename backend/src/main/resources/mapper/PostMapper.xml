@@ -53,8 +53,8 @@
       #{userId},
       #{body},
       #{imagePath},
-      COALESCE(#{createdAt}, CURRENT_TIMESTAMP),
-      COALESCE(#{createdAt}, CURRENT_TIMESTAMP)
+      COALESCE(#{createdAt}, CAST(CURRENT_TIMESTAMP AS VARCHAR)),
+      COALESCE(#{createdAt}, CAST(CURRENT_TIMESTAMP AS VARCHAR))
     )
   </insert>
 
@@ -62,7 +62,7 @@
     UPDATE posts
     SET body = #{body},
         image_path = #{imagePath},
-        updated_at = CURRENT_TIMESTAMP
+        updated_at = CAST(CURRENT_TIMESTAMP AS VARCHAR)
     WHERE id = #{id}
   </update>
 

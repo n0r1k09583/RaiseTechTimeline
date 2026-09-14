@@ -75,5 +75,7 @@ gh repo create RaiseTechTimeline --private --source=. --remote=origin --push
 - フォローは `follows` の1行。フォロー中一覧は IN サブクエリ1回（N+1 にしない）
 - AWS 常時稼働・有料リソースを作らない。S3 を授業で触る場合も作りっぱなしにしない
 - 画面は SPA（Vite + React）。Next.js の SSG にしない。公開ページ `/login` `/signup` は検索対象、ログイン後は noindex
-- ログは `backend/logs/` のファイル確認まで。Datadog は入れない
-- テストは H2。日本語メソッド名可。Checkstyle あり。E2E なし
+- ログは `backend/logs/` の JSON ファイル確認まで（traceId・duration_ms）。Datadog は入れない
+- テストは H2。日本語メソッド名可。Checkstyle あり。毎回の `mvnw test` / `npm test` に E2E も k6 も載せない。性能は任意で k6（`docs/performance.md`）
+- AWS は `infra/terraform/` に定義のみ。S3+CloudFront（画面）、Fargate（API）、RDS PostgreSQL 17、画像 S3、ALB。EC2/Nginx/NAT なし。apply して残さない。ローカル確認は 8080 / 5173 と SQLite
+- 画像の差し替え口は `ImageStore`（local 既定 / s3 はプロファイル aws）。バケットは常時作らない

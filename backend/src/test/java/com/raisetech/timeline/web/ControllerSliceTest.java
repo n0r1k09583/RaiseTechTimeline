@@ -16,7 +16,7 @@ import org.springframework.core.annotation.AliasFor;
     excludeFilters =
         @ComponentScan.Filter(
             type = FilterType.ASSIGNABLE_TYPE,
-            classes = {WebMvcConfig.class, AuthInterceptor.class}))
+            classes = {WebMvcConfig.class, AuthInterceptor.class, RequestMdcFilter.class}))
 public @interface ControllerSliceTest {
 
   @AliasFor(annotation = WebMvcTest.class, attribute = "controllers")

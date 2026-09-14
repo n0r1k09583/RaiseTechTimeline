@@ -16,14 +16,17 @@ public class WebMvcConfig implements WebMvcConfigurer {
   private final AuthInterceptor authInterceptor;
   private final String[] origins;
   private final Path uploadDir;
+  private final boolean localUploads;
 
   public WebMvcConfig(
       AuthInterceptor authInterceptor,
       @Value("${cors.origins:http://localhost:5173,http://127.0.0.1:5173}") String origins,
-      @Value("${app.upload-dir:./uploads}") String uploadDir) {
+      @Value("${app.upload-dir:./uploads}") String uploadDir,
+      @Value("${app.storage:local}") String storage) {
     this.authInterceptor = authInterceptor;
     this.origins = Arrays.stream(origins.split(",")).map(String::trim).toArray(String[]::new);
     this.uploadDir = Path.of(uploadDir).toAbsolutePath().normalize();
+    this.localUploads = !"s3".equals(storage);
   }
 
   @Override
@@ -40,6 +43,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
   @Override
   public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    if (!localUploads) {
+      return;
+    }
     registry.addResourceHandler("/uploads/**")
         .addResourceLocations(uploadDir.toUri().toString());
   }

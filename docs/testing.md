@@ -96,4 +96,4 @@
 
 TDD の Red は、成功例より **境界の外側と権限エラー** の方が契約がはっきりする。Swagger に書いた 400 / 401 / 403 / 413 は、ブラックボックスの期待値そのもの。
 
-品質チェック: `backend` で `.\mvnw.cmd test`（Checkstyle は validate で一緒に走る）。ルールは `CLAUDE.md`。ログは [logging.md](./logging.md)。
+品質チェック: `backend` で `.\mvnw.cmd test`（Checkstyle は validate で一緒に走る）。ルールは `CLAUDE.md`。ログは [logging.md](./logging.md)。遅さ・負荷・ブラウザの描画は毎回回さない。[パフォーマンステストの計画](./performance.md)（P95、後始末）。

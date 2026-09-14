@@ -27,9 +27,9 @@ public class PostService {
   private final PostMapper posts;
   private final UserMapper users;
   private final CommentMapper comments;
-  private final ImageStorage images;
+  private final ImageStore images;
 
-  public PostService(PostMapper posts, UserMapper users, CommentMapper comments, ImageStorage images) {
+  public PostService(PostMapper posts, UserMapper users, CommentMapper comments, ImageStore images) {
     this.posts = posts;
     this.users = users;
     this.comments = comments;

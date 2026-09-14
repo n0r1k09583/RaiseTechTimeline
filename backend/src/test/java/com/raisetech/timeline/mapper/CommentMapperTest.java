@@ -40,7 +40,7 @@ class CommentMapperTest {
   }
 
   @Test
-  void 1件削除で他のコメントは残る() {
+  void 一件削除で他のコメントは残る() {
     User author = user("c3@example.com", "c3", "三");
     Post post = post(author.getId());
     Comment keep = insert(post.getId(), author.getId(), "残す", "2026-09-01 10:00:00");

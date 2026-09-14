@@ -80,7 +80,7 @@ class ImageStorageTest {
   }
 
   @Test
-  void 5MB超は拒否する() {
+  void 容量5MB超は拒否する() {
     byte[] tooBig = new byte[5 * 1024 * 1024 + 1];
     MockMultipartFile file = new MockMultipartFile("image", "x.jpg", "image/jpeg", tooBig);
     assertThatThrownBy(() -> storage.save(file))

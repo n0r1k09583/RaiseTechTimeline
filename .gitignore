@@ -10,6 +10,18 @@ backend/logs/
 logs/
 frontend/dist/
 frontend/e2e/
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.*
+infra/terraform/*.tfvars
+perf/results/
+uploads-perf/
+data/timeline-perf.db
+data/timeline-perf.db-wal
+data/timeline-perf.db-shm
+backend/data/timeline-perf.db
+backend/data/timeline-perf.db-wal
+backend/data/timeline-perf.db-shm
 
 
 

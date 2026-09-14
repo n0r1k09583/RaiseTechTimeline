@@ -59,6 +59,13 @@ public class PostController {
           新しい差分は afterCreatedAt + afterId。
           tab=following はフォロー表がまだ無いので空案内になる。
           """)
+  @ApiResponse(
+      responseCode = "200",
+      description = "新しい順の一覧",
+      content =
+          @Content(
+              mediaType = MediaType.APPLICATION_JSON_VALUE,
+              schema = @Schema(implementation = PostListResponse.class)))
   public PostListResponse list(
       HttpServletRequest request,
       @Parameter(description = "all=全投稿。following=フォロー中（未実装のため空）")

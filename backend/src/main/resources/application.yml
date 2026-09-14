@@ -58,9 +58,12 @@ springdoc:
 
 app:
   upload-dir: ${UPLOAD_DIR:./uploads}
+  storage: ${APP_STORAGE:local}
+  image-bucket: ${IMAGE_BUCKET:}
 
 # 課題は backend/logs のファイル確認。Datadog などは入れない。
-# DEBUG は調査するときだけ com.raisetech.timeline を上げる。
+# application.log / error.log は JSON（構造化）。DEBUG は調査するときだけ上げる。
+# パスワード・トークン・リクエスト本文はログに出さない。
 logging:
   file:
     path: logs

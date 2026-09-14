@@ -10,8 +10,10 @@
 | [開発開始後の仕様追加・変更](./dev-changes.md) | 認証のあとで決めたことと、プログラムに足したもの |
 | [API 仕様書（OpenAPI / Swagger）](./openapi.md) | 別チーム向けのインターフェース。コードから自動生成。AI がなかったころとの比較 |
 | [テストの考え方](./testing.md) | ブラックボックス／ホワイトボックス。同値分割・境界値・分岐。日本語メソッド名。H2。E2E なし |
-| [ログ設計](./logging.md) | アクセス／アプリ／エラー。レベル。ファイル確認まで。Datadog は入れない |
+| [パフォーマンステストの計画](./performance.md) | 任意実行。P50/P95/P99。API は k6（利用者が多くメンテしやすい）。ブラウザは Playwright。後始末 |
+| [ログ・監視の設計指針](./logging.md) | レベル、JSON 構造化、含める／含めないフィールド。ファイル確認まで。Datadog は入れない |
 | [次回・最終回](./next-lesson.md) | プロフィール／フォローのあと、検索・「フォロー中」・画像調整。MyBatis XML、サイズ制限、検索 SQL、DevTools、S3 は作らない |
+| [AWS 構成（定義のみ）](../infra/terraform/README.md) | 画面は S3+CloudFront、API は Fargate、RDS PostgreSQL、画像 S3、ALB。apply して残さない |
 | [ER図](./er.md) | テーブルと関連 |
 | [技術スタック](./tech-selection.md) | にゃんこタスクと同一バージョン |
 | [N+1問題](./n-plus-one.md) | コメント・いいね。一覧はサブクエリで件数を取る（提出してよい） |

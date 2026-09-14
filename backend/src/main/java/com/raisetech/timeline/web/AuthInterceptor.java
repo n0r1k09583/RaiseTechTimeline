@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -47,7 +48,9 @@ public class AuthInterceptor implements HandlerInterceptor {
     }
     try {
       Claims claims = jwt.parseAccess(token);
-      request.setAttribute(USER_ID_ATTR, Long.parseLong(claims.getSubject()));
+      String userId = claims.getSubject();
+      request.setAttribute(USER_ID_ATTR, Long.parseLong(userId));
+      MDC.put("userId", userId);
       return true;
     } catch (JwtException | IllegalArgumentException ex) {
       log.warn("トークン無効 path={}", request.getRequestURI());

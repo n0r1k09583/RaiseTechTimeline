@@ -18,6 +18,14 @@ API 仕様書（コードから自動生成。コントローラを直して再�
 
 JWT の秘密鍵は `.env` の `JWT_SECRET`。Git に書かない。
 
+## ログ
+
+起動すると `logs/` にファイルが出る（Git に入れない）。設計は `docs/logging.md`。
+
+- `application.log` / `error.log` … JSON（`traceId`・`userId`・`duration_ms` など）
+- `access.*.log` … Tomcat のアクセスログ（テキスト）
+- パスワード・JWT は出さない。Datadog は入れない
+
 ## テスト
 
 本番の `data/timeline.db` には書かない。テストはメモリの H2（SQLite 互換）。考え方は `docs/testing.md`（ブラックボックス／ホワイトボックス、境界値）。
