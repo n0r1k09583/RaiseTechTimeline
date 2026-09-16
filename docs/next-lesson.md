@@ -12,10 +12,10 @@
 | 回 | 内容 | プログラム |
 |----|------|------------|
 | いままで | 認証・投稿・コメント・画像（ローカル） | あり |
-| 直前 | プロフィール表示・編集、フォロー／フォロワー | **まだ** |
+| 直前 | プロフィール表示、フォロー／フォロワー、「フォロー中」タブ | あり |
 | **いま** | Swagger（OpenAPI）で API 仕様書を自動生成 | あり（`/v3/api-docs`） |
-| 番外 | テストの答え合わせとログ。JSON 構造化、日本語メソッド名、Mockito、H2、Checkstyle | あり |
-| **最終回** | ユーザー検索、タイムライン「フォロー中」、画像の全体調整（授業では S3 の話あり） | **まだ**（AWS の Terraform 定義だけ `infra/terraform/` にある。apply しない） |
+| 番外 | テストの答え合わせとログ。JSON 構造化、日本語メソッド名、Mockito、H2、Checkstyle | あり。CI は `.github/workflows/ci.yml`（`mvnw test` と `npm test`。k6 / E2E は載せない） |
+| **最終回** | ユーザー検索、タイムライン「フォロー中」、画像の全体調整（授業では S3 の話あり） | 検索・フォロー中は **あり**。AWS の Terraform 定義は `infra/terraform/`。apply して残さない |
 
 ---
 
@@ -48,9 +48,9 @@
 | 機能 | 状態 |
 |------|------|
 | ログイン／投稿／無限スクロール／コメント | あり。SQL は XML。件数は一覧のサブクエリ（N+1 にしない） |
-| いいね | 件数は `0 AS like_count`。トグルはまだ |
-| 画像投稿 | ローカル `uploads/`。5MB。JPEG / PNG / WebP。S3 はまだ繋がない |
-| プロフィール・フォロー・検索 | まだ。「フォロー中」タブは空案内 |
+| いいね | トグルあり。件数は同じ SELECT のサブクエリ（N+1 にしない） |
+| 画像投稿 | ローカル `uploads/`。5MB。JPEG / PNG / WebP。S3 は `APP_STORAGE=s3` の差し替え口 |
+| プロフィール・フォロー・検索 | あり。「フォロー中」タブは自分＋フォロー先 |
 
 試すアカウント: `@yamada` `@hanako` `@ichiro`、パスワードは全員 `password123`。API は 8080。止まっていると「リクエストに失敗しました」。
 
@@ -161,10 +161,9 @@ LIMIT 20
 
 ---
 
-## 作業順（これから）
+## 作業順（残り）
 
-1. プロフィール（S-05）とフォロー（`follows`）。画像変更は人がファイルを選ぶ。API は curl でも確認する
-2. 「フォロー中」タブを上の SQL にする
-3. ユーザー検索（XML の LIKE、N+1 にしない）
-4. 画像のバリデーションを画面・アプリ・Spring で揃える。S3 は授業の話と差し替え口だけ（バケットは作らない）
-5. 起動: `backend` で `.\mvnw.cmd -Dmaven.test.skip=true spring-boot:run`。API が通れば画面の前に十分
+1. プロフィール画像の変更は人がファイルを選ぶ（任意。ER に列はまだ無い）
+2. 提出用 URL が要るときだけ `terraform apply` → 動作確認 → **すぐ destroy**（NAT なし。常時稼働しない）
+3. 任意: k6（`docs/performance.md`）、Playwright E2E。どちらも毎回の `mvnw test` / `npm test` / CI には載せない
+4. 起動: `backend` で `.\mvnw.cmd -Dmaven.test.skip=true spring-boot:run`。API が通れば画面の前に十分

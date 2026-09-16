@@ -10,9 +10,12 @@ type Props = {
   postId: number;
   onLogout: () => void | Promise<void>;
   onDone: () => void;
+  onHome?: () => void;
+  onProfile?: () => void;
+  onSearch?: (q: string) => void;
 };
 
-export function EditPage({ user, postId, onLogout, onDone }: Props) {
+export function EditPage({ user, postId, onLogout, onDone, onHome, onProfile, onSearch }: Props) {
   const [body, setBody] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [error, setError] = useState("");
@@ -71,7 +74,13 @@ export function EditPage({ user, postId, onLogout, onDone }: Props) {
 
   return (
     <main className="page">
-      <AppHeader user={user} onLogout={onLogout} onHome={onDone} />
+      <AppHeader
+        user={user}
+        onLogout={onLogout}
+        onHome={onHome}
+        onProfile={onProfile}
+        onSearch={onSearch}
+      />
       <section className="card">
         <h1>投稿を編集</h1>
         <p className="lead">自分の投稿だけ編集できます。新しい画像を選ぶと差し替わります。</p>

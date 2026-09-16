@@ -23,7 +23,13 @@ variable "aws_region" {
 
 variable "name" {
   type    = string
-  default = "timeline"
+  default = "raisetimeline"
+}
+
+variable "enable_infra" {
+  type        = bool
+  default     = false
+  description = "true のときだけ AWS に作る。既定 false。確認が終わったら destroy。"
 }
 
 variable "desired_count" {
@@ -36,4 +42,9 @@ variable "jwt_secret" {
   type      = string
   sensitive = true
   default   = "change-me-before-any-apply"
+}
+
+locals {
+  on = var.enable_infra ? 1 : 0
+  az = var.enable_infra ? 2 : 0
 }

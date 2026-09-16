@@ -83,12 +83,32 @@ Flyway `V3__create_posts.sql`（`posts`）、`V4__create_comments.sql`（`commen
 
 ---
 
+## 2026-09-14 いいね・フォロー・検索
+
+Flyway `V5` likes、`V6` follows。件数は投稿と同じ SELECT。フォロー中は IN サブクエリ1回。
+
+| 方法 | パス | 内容 |
+|------|------|------|
+| POST | `/api/posts/{id}/likes` | いいねのトグル。応答は投稿（`likeCount` / `likedByMe`） |
+| GET | `/api/users?q=` | ユーザー名の部分一致。空は空配列 |
+| GET | `/api/users/{username}` | プロフィール（email なし） |
+| GET | `/api/users/{username}/posts` | その人の投稿 |
+| GET | `/api/users/{username}/followees` | フォロー中 |
+| GET | `/api/users/{username}/followers` | フォロワー |
+| POST / DELETE | `/api/users/{username}/follow` | フォロー／解除。自分は 400 |
+
+画面: プロフィール、フォロー一覧、検索、ヘッダー検索、いいねボタン、「フォロー中」タブ。
+
+CI: `.github/workflows/ci.yml`（backend `mvnw test`、frontend `tsc` + `npm test`。k6 / E2E なし）
+
+---
+
 ## 今回のプログラムにまだ入れないもの
 
-いいねの操作、フォロー、ユーザー検索、プロフィール、S3、WebSocket。  
-いいね数はカードに 0 と出す。いいね表はまだ作らない。
+プロフィール画像、WebSocket、AWS の常時公開。  
+S3 は差し替え口のみ。提出の動作確認はローカルで足りる。
 
-**これから**は [next-lesson.md](./next-lesson.md)。プロフィール／フォローのあと、最終回はユーザー検索、「フォロー中」、画像の全体調整。S3 バケットは作らない。
+**これから**は [next-lesson.md](./next-lesson.md)。提出 URL が要るときだけ Terraform を短時間 apply してすぐ destroy。
 
 ---
 
@@ -100,3 +120,6 @@ Flyway `V3__create_posts.sql`（`posts`）、`V4__create_comments.sql`（`commen
 4. 下へスクロールすると古い投稿が続く。「もっと見る」は無い。続きが載ると「投稿されました」と出る
 5. 他アカウントの投稿は、約30秒後またはタブに戻ったときに一覧へ混ざる。通知は出ない
 6. 投稿詳細でコメントを書け、件数がタイムラインに反映される。自分のコメントだけ削除できる
+7. ハートでいいね／取り消し。件数がカードに出る
+8. ユーザー名からプロフィールへ進み、フォローできる。「フォロー中」に相手の投稿が出る
+9. ヘッダー検索でユーザー名の一部を入れてプロフィールへ進める

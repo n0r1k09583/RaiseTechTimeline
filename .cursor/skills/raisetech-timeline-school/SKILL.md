@@ -66,8 +66,8 @@ gh repo create RaiseTechTimeline --private --source=. --remote=origin --push
 - 投稿の作成・編集・削除。自分の操作は直後に反映。続きは無限スクロール。「もっと見る」は置かない
 - コメントの作成・一覧・自分の削除。件数は投稿と同じ SELECT のサブクエリ（N+1 にしない）。`docs/n-plus-one.md` は提出してよい
 - 他人の変更は約30秒おき（またはタブに戻ったとき）に静かに取り直す。WebSocket の一件通知は使わない
-- 機能定義書の F-03〜F-07 は本文から外さない。プログラムは認証・投稿・コメント・ローカル画像まで。いいね操作・フォロー・プロフィール・検索はこれから
-- フォルダを開いたら `docs/next-lesson.md` から再開する。直前はプロフィール／フォロー。最終回はユーザー検索、「フォロー中」タイムライン、画像の全体調整（S3 は話と差し替え口。バケットは作らない）
+- 機能定義書の F-03〜F-07 は本文から外さない。プログラムは認証・投稿・コメント・いいね・フォロー・プロフィール・検索・ローカル画像
+- フォルダを開いたら `docs/next-lesson.md` から再開する。7機能は本実装あり。提出 URL は短時間 apply → destroy。k6 / E2E は毎回のテストに載せない
 - MyBatis は SQL を XML に分ける。複数行アノテーションは使わない。設定は `application.yml` の `mybatis.mapper-locations`
 - ファイルサイズは 5MB を画面・`ImageStorage`・`multipart.max-file-size` で見る
 - ユーザー検索は `username LIKE` を1回。ユーザーを1件ずつ取らない

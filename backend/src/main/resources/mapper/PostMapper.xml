@@ -3,11 +3,17 @@
     "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.raisetech.timeline.mapper.PostMapper">
 
+  <sql id="postColumns">
+    p.id, p.user_id, p.body, p.image_path, p.created_at, p.updated_at,
+    u.username, u.display_name,
+    (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count,
+    (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS like_count
+  </sql>
+
   <sql id="selectPost">
-    SELECT p.id, p.user_id, p.body, p.image_path, p.created_at, p.updated_at,
-           u.username, u.display_name,
-           (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count,
-           0 AS like_count
+    SELECT <include refid="postColumns"/>,
+           (SELECT COUNT(*) FROM likes liked
+            WHERE liked.post_id = p.id AND liked.user_id = #{viewerId}) AS liked_by_me
     FROM posts p
     JOIN users u ON u.id = p.user_id
   </sql>
@@ -28,11 +34,20 @@
 
   <sql id="tabFilter">
     <if test="tab == 'following'">
-      AND p.user_id = #{viewerId}
+      AND (p.user_id = #{viewerId}
+        OR p.user_id IN (SELECT followee_id FROM follows WHERE follower_id = #{viewerId}))
     </if>
   </sql>
 
   <select id="findById" resultType="Post">
+    SELECT <include refid="postColumns"/>,
+           0 AS liked_by_me
+    FROM posts p
+    JOIN users u ON u.id = p.user_id
+    WHERE p.id = #{id}
+  </select>
+
+  <select id="findForViewer" resultType="Post">
     <include refid="selectPost"/>
     WHERE p.id = #{id}
   </select>
@@ -41,6 +56,15 @@
     <include refid="selectPost"/>
     WHERE 1 = 1
     <include refid="tabFilter"/>
+    <include refid="pageOlder"/>
+    <include refid="pageNewer"/>
+    ORDER BY p.created_at DESC, p.id DESC
+    LIMIT #{limit}
+  </select>
+
+  <select id="listByAuthor" resultType="Post">
+    <include refid="selectPost"/>
+    WHERE p.user_id = #{authorId}
     <include refid="pageOlder"/>
     <include refid="pageNewer"/>
     ORDER BY p.created_at DESC, p.id DESC

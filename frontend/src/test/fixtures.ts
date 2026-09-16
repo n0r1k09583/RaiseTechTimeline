@@ -20,6 +20,7 @@ export function post(overrides: Partial<Post> = {}): Post {
     mine: true,
     commentCount: 0,
     likeCount: 0,
+    likedByMe: false,
     ...overrides,
   };
 }

@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.raisetech.timeline.domain.User;
+import com.raisetech.timeline.domain.UserSummary;
 import com.raisetech.timeline.support.MapperH2Test;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -42,6 +44,17 @@ class UserMapperTest {
     insert("same@example.com", "user_a", "A");
     assertThatThrownBy(() -> insert("same@example.com", "user_b", "B"))
         .isInstanceOf(DataIntegrityViolationException.class);
+  }
+
+  @Test
+  void 複数パターンでユーザーを探せる() {
+    insert("kana@example.com", "yamada_kana", "山田");
+    assertThat(users.search(List.of("%yamada_kana%"), 1L))
+        .extracting(UserSummary::getUsername)
+        .contains("yamada_kana");
+    assertThat(users.search(List.of("%やまだ%", "%ヤマダ%", "%yamada_kana%"), 1L))
+        .extracting(UserSummary::getUsername)
+        .contains("yamada_kana");
   }
 
   private User insert(String email, String username, String displayName) {

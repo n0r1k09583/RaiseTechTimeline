@@ -4,7 +4,7 @@
 
 ## いま実装している範囲
 
-**認証と投稿（タイムライン表示・作成・編集・削除）、コメント、ローカル画像。** いいね操作・フォロー・プロフィール・検索はまだ。コメント数は投稿一覧の同じ SELECT で取る（N+1 にしない）。続きは `docs/next-lesson.md`（プロフィール／フォローのあと、最終回は検索・「フォロー中」・画像の全体調整。S3 バケットは作らない。AWS は `infra/terraform/` の定義のみ）。負荷は任意の k6（`docs/performance.md`）。`mvnw test` に載せない。
+**認証と投稿（タイムライン表示・作成・編集・削除）、コメント、いいね、フォロー、プロフィール、ユーザー検索、ローカル画像。** 件数は投稿一覧の同じ SELECT で取る（N+1 にしない）。続きは `docs/next-lesson.md`（プロフィール画像は任意。AWS は `infra/terraform/` の定義のみ。apply して残さない）。負荷は任意の k6（`docs/performance.md`）。`mvnw test` に載せない。CI は `.github/workflows/ci.yml`。
 
 1. 機能定義書 `docs/FEATURES/機能定義書.md`（FEATURES。FUTURES ではない）
 2. バックエンド `backend/` … Spring Boot + MyBatis + SQLite + JWT + Flyway。ポート 8080
@@ -19,7 +19,7 @@
 
 - バックエンド: `backend` で `.\mvnw.cmd test`（validate で Checkstyle、そのあと H2 のテスト）
 - Checkstyle 設定は `backend/checkstyle.xml`。本番コードのメソッド名は英語。テストメソッド名は日本語にしてよい
-- フロント: `frontend` で `npm test`。E2E はしない
+- フロント: `frontend` で `npm test`。E2E と k6 は毎回回さない。CI は `.github/workflows/ci.yml`
 - ログは `backend/logs/`（Git に入れない）。アプリ／エラーは JSON の構造化ログ。Datadog は入れない。課題はファイル確認まで
 - パスワード・JWT・リフレッシュトークンをレスポンスにもログにも出さない
 

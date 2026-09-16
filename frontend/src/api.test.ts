@@ -5,6 +5,7 @@ import {
   getToken,
   login,
   logout,
+  searchUsers,
   setSession,
 } from "./api";
 
@@ -84,5 +85,37 @@ describe("api", () => {
       "new",
     );
     expect(accessOf({ token: "old", user: { id: 1, email: "a", username: "a", displayName: "A" } })).toBe("old");
+  });
+
+  it("refreshes an expired access token and retries", async () => {
+    setSession("expired", "refresh-token");
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: "トークンが無効です。再度ログインしてください" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            accessToken: "fresh",
+            refreshToken: "next-refresh",
+            user: { id: 1, email: "a", username: "a", displayName: "A" },
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ users: [{ id: 2, username: "hanako", displayName: "佐藤 花子" }] }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    const res = await searchUsers("hana");
+    expect(res.users[0]?.username).toBe("hanako");
+    expect(getToken()).toBe("fresh");
+    expect(vi.mocked(fetch).mock.calls[1]?.[0]).toBe("/api/refresh");
+    expect(vi.mocked(fetch).mock.calls[2]?.[0]).toBe("/api/users?q=hana");
   });
 });

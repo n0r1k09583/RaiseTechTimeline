@@ -17,6 +17,7 @@ public class PostResponse {
   private boolean mine;
   private int commentCount;
   private int likeCount;
+  private boolean likedByMe;
 
   public static PostResponse from(Post post, long viewerId) {
     PostResponse response = new PostResponse();
@@ -31,6 +32,7 @@ public class PostResponse {
     response.mine = post.getUserId() != null && post.getUserId() == viewerId;
     response.commentCount = post.getCommentCount();
     response.likeCount = post.getLikeCount();
+    response.likedByMe = post.isLikedByMe();
     return response;
   }
 
@@ -86,5 +88,9 @@ public class PostResponse {
 
   public int getLikeCount() {
     return likeCount;
+  }
+
+  public boolean isLikedByMe() {
+    return likedByMe;
   }
 }

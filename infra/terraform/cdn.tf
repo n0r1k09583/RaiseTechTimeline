@@ -1,17 +1,22 @@
+data "aws_caller_identity" "current" {
+  count = local.on
+}
+
 resource "aws_s3_bucket" "web" {
-  bucket        = "${var.name}-web-${data.aws_caller_identity.current.account_id}"
+  count         = local.on
+  bucket        = "${var.name}-web-${data.aws_caller_identity.current[0].account_id}"
   force_destroy = true
 }
 
 resource "aws_s3_bucket" "images" {
-  bucket        = "${var.name}-images-${data.aws_caller_identity.current.account_id}"
+  count         = local.on
+  bucket        = "${var.name}-images-${data.aws_caller_identity.current[0].account_id}"
   force_destroy = true
 }
 
-data "aws_caller_identity" "current" {}
-
 resource "aws_s3_bucket_public_access_block" "web" {
-  bucket                  = aws_s3_bucket.web.id
+  count                   = local.on
+  bucket                  = aws_s3_bucket.web[0].id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -19,7 +24,8 @@ resource "aws_s3_bucket_public_access_block" "web" {
 }
 
 resource "aws_s3_bucket_public_access_block" "images" {
-  bucket                  = aws_s3_bucket.images.id
+  count                   = local.on
+  bucket                  = aws_s3_bucket.images[0].id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -27,6 +33,7 @@ resource "aws_s3_bucket_public_access_block" "images" {
 }
 
 resource "aws_cloudfront_origin_access_control" "s3" {
+  count                             = local.on
   name                              = "${var.name}-oac"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
@@ -34,31 +41,34 @@ resource "aws_cloudfront_origin_access_control" "s3" {
 }
 
 data "aws_cloudfront_cache_policy" "caching_disabled" {
-  name = "Managed-CachingDisabled"
+  count = local.on
+  name  = "Managed-CachingDisabled"
 }
 
 data "aws_cloudfront_origin_request_policy" "all_viewer_except_host" {
-  name = "Managed-AllViewerExceptHostHeader"
+  count = local.on
+  name  = "Managed-AllViewerExceptHostHeader"
 }
 
 resource "aws_cloudfront_distribution" "cdn" {
+  count               = local.on
   enabled             = true
   default_root_object = "index.html"
 
   origin {
-    domain_name              = aws_s3_bucket.web.bucket_regional_domain_name
+    domain_name              = aws_s3_bucket.web[0].bucket_regional_domain_name
     origin_id                = "web"
-    origin_access_control_id = aws_cloudfront_origin_access_control.s3.id
+    origin_access_control_id = aws_cloudfront_origin_access_control.s3[0].id
   }
 
   origin {
-    domain_name              = aws_s3_bucket.images.bucket_regional_domain_name
+    domain_name              = aws_s3_bucket.images[0].bucket_regional_domain_name
     origin_id                = "images"
-    origin_access_control_id = aws_cloudfront_origin_access_control.s3.id
+    origin_access_control_id = aws_cloudfront_origin_access_control.s3[0].id
   }
 
   origin {
-    domain_name = aws_lb.api.dns_name
+    domain_name = aws_lb.api[0].dns_name
     origin_id   = "api"
     custom_origin_config {
       http_port              = 80
@@ -87,8 +97,8 @@ resource "aws_cloudfront_distribution" "cdn" {
     viewer_protocol_policy   = "redirect-to-https"
     allowed_methods          = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
     cached_methods           = ["GET", "HEAD"]
-    cache_policy_id          = data.aws_cloudfront_cache_policy.caching_disabled.id
-    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
+    cache_policy_id          = data.aws_cloudfront_cache_policy.caching_disabled[0].id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer_except_host[0].id
   }
 
   ordered_cache_behavior {
@@ -129,9 +139,10 @@ resource "aws_cloudfront_distribution" "cdn" {
 }
 
 data "aws_iam_policy_document" "web_oac" {
+  count = local.on
   statement {
     actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.web.arn}/*"]
+    resources = ["${aws_s3_bucket.web[0].arn}/*"]
     principals {
       type        = "Service"
       identifiers = ["cloudfront.amazonaws.com"]
@@ -139,15 +150,16 @@ data "aws_iam_policy_document" "web_oac" {
     condition {
       test     = "StringEquals"
       variable = "AWS:SourceArn"
-      values   = [aws_cloudfront_distribution.cdn.arn]
+      values   = [aws_cloudfront_distribution.cdn[0].arn]
     }
   }
 }
 
 data "aws_iam_policy_document" "images_oac" {
+  count = local.on
   statement {
     actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.images.arn}/*"]
+    resources = ["${aws_s3_bucket.images[0].arn}/*"]
     principals {
       type        = "Service"
       identifiers = ["cloudfront.amazonaws.com"]
@@ -155,17 +167,19 @@ data "aws_iam_policy_document" "images_oac" {
     condition {
       test     = "StringEquals"
       variable = "AWS:SourceArn"
-      values   = [aws_cloudfront_distribution.cdn.arn]
+      values   = [aws_cloudfront_distribution.cdn[0].arn]
     }
   }
 }
 
 resource "aws_s3_bucket_policy" "web" {
-  bucket = aws_s3_bucket.web.id
-  policy = data.aws_iam_policy_document.web_oac.json
+  count  = local.on
+  bucket = aws_s3_bucket.web[0].id
+  policy = data.aws_iam_policy_document.web_oac[0].json
 }
 
 resource "aws_s3_bucket_policy" "images" {
-  bucket = aws_s3_bucket.images.id
-  policy = data.aws_iam_policy_document.images_oac.json
+  count  = local.on
+  bucket = aws_s3_bucket.images[0].id
+  policy = data.aws_iam_policy_document.images_oac[0].json
 }

@@ -14,11 +14,20 @@ public class SchemaInitializer implements ApplicationRunner {
   private final AuthService auth;
   private final PostService posts;
   private final CommentService comments;
+  private final LikeService likes;
+  private final FollowService follows;
 
-  public SchemaInitializer(AuthService auth, PostService posts, CommentService comments) {
+  public SchemaInitializer(
+      AuthService auth,
+      PostService posts,
+      CommentService comments,
+      LikeService likes,
+      FollowService follows) {
     this.auth = auth;
     this.posts = posts;
     this.comments = comments;
+    this.likes = likes;
+    this.follows = follows;
   }
 
   @Override
@@ -26,6 +35,8 @@ public class SchemaInitializer implements ApplicationRunner {
     auth.seedIfEmpty();
     posts.seedIfEmpty();
     comments.seedIfEmpty();
+    likes.seedIfEmpty();
+    follows.seedIfEmpty();
     log.info("起動時シードを確認した");
   }
 }

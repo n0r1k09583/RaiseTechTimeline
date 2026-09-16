@@ -7,7 +7,7 @@
 | ブラックボックス | 機能定義・画面・OpenAPI（入力と結果だけ） | コントローラ結合（`*ApiTest`）、画面コンポーネント、サービスでも境界値 |
 | ホワイトボックス | 実装の分岐・条件・SQL | サービス単体、MyBatis（H2）、JWT、画像保存 |
 
-本番の SQLite（`data/timeline.db`）には書かない。DB 系はメモリの **H2**。H2 2.x に `MODE=SQLite` は無いので、テスト用 DDL は `backend/src/test/resources/db/h2/`、本番 Flyway は SQLite のまま。E2E はしない。
+本番の SQLite（`data/timeline.db`）には書かない。DB 系はメモリの **H2**。H2 2.x に `MODE=SQLite` は無いので、テスト用 DDL は `backend/src/test/resources/db/h2/`、本番 Flyway は SQLite のまま。毎回の自動実行に E2E も k6 も載せない。CI は `.github/workflows/ci.yml`。
 
 `@MapperH2Test` は `com.raisetech.timeline.support` に置く（`mapper` パッケージだと MyBatis が Mapper と誤認し、`@WebMvcTest` が壊れる）。
 

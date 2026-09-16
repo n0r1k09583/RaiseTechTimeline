@@ -12,6 +12,7 @@ public class Post {
   private String displayName;
   private int commentCount;
   private int likeCount;
+  private boolean likedByMe;
 
   public Long getId() {
     return id;
@@ -91,5 +92,13 @@ public class Post {
 
   public void setLikeCount(int likeCount) {
     this.likeCount = likeCount;
+  }
+
+  public boolean isLikedByMe() {
+    return likedByMe;
+  }
+
+  public void setLikedByMe(boolean likedByMe) {
+    this.likedByMe = likedByMe;
   }
 }

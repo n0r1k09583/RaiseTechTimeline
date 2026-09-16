@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.raisetech.timeline.dto.PostListResponse;
+import com.raisetech.timeline.service.LikeService;
 import com.raisetech.timeline.service.PostService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,9 @@ class PostControllerTest {
 
   @MockitoBean
   PostService posts;
+
+  @MockitoBean
+  LikeService likes;
 
   @Test
   void 投稿0件の一覧は空() throws Exception {

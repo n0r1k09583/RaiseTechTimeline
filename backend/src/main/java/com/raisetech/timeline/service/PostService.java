@@ -66,7 +66,43 @@ public class PostService {
   }
 
   public PostResponse get(long viewerId, long id) {
-    return PostResponse.from(require(id), viewerId);
+    Post post = posts.findForViewer(id, viewerId);
+    if (post == null) {
+      throw new ApiException(HttpStatus.NOT_FOUND, "投稿が見つかりません");
+    }
+    return PostResponse.from(post, viewerId);
+  }
+
+  public PostListResponse listByUsername(
+      long viewerId,
+      String username,
+      Integer limit,
+      String beforeCreatedAt,
+      Long beforeId,
+      String afterCreatedAt,
+      Long afterId) {
+    User author = users.findByUsername(username);
+    if (author == null) {
+      throw new ApiException(HttpStatus.NOT_FOUND, "ユーザーが見つかりません");
+    }
+    int size = limit == null ? DEFAULT_LIMIT : Math.min(Math.max(limit, 1), MAX_LIMIT);
+    boolean pagingOlder = beforeCreatedAt != null && beforeId != null;
+    boolean pagingNewer = afterCreatedAt != null && afterId != null;
+    int fetch = pagingNewer ? size : size + 1;
+    List<Post> rows = posts.listByAuthor(
+        viewerId,
+        author.getId(),
+        fetch,
+        pagingOlder ? beforeCreatedAt : null,
+        pagingOlder ? beforeId : null,
+        pagingNewer ? afterCreatedAt : null,
+        pagingNewer ? afterId : null);
+    boolean hasMore = !pagingNewer && rows.size() > size;
+    if (hasMore) {
+      rows = rows.subList(0, size);
+    }
+    List<PostResponse> body = rows.stream().map(post -> PostResponse.from(post, viewerId)).toList();
+    return new PostListResponse(body, hasMore);
   }
 
   @Transactional
@@ -78,7 +114,7 @@ public class PostService {
     post.setImagePath(images.save(image));
     posts.insert(post);
     log.info("投稿を作成 userId={} postId={}", userId, post.getId());
-    return PostResponse.from(require(post.getId()), userId);
+    return PostResponse.from(posts.findForViewer(post.getId(), userId), userId);
   }
 
   @Transactional
@@ -92,7 +128,7 @@ public class PostService {
       images.delete(previous);
     }
     posts.update(existing);
-    return PostResponse.from(require(id), userId);
+    return PostResponse.from(posts.findForViewer(id, userId), userId);
   }
 
   @Transactional

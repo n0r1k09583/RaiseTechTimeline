@@ -38,7 +38,47 @@ export function accessOf(res: AuthPayload) {
   return res.accessToken || res.token || "";
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+function isPublicAuthPath(path: string) {
+  return (
+    path.startsWith("/api/login") ||
+    path.startsWith("/api/signup") ||
+    path.startsWith("/api/refresh") ||
+    path.startsWith("/api/logout")
+  );
+}
+
+let refreshInFlight: Promise<boolean> | null = null;
+
+async function refreshSession(): Promise<boolean> {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) {
+    return false;
+  }
+  if (!refreshInFlight) {
+    refreshInFlight = (async () => {
+      try {
+        const res = await fetch("/api/refresh", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken }),
+        });
+        const data = (await res.json().catch(() => ({}))) as AuthPayload;
+        if (!res.ok || !accessOf(data)) {
+          return false;
+        }
+        setSession(accessOf(data), data.refreshToken ?? refreshToken);
+        return true;
+      } catch {
+        return false;
+      }
+    })().finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
+}
+
+async function request<T>(path: string, init: RequestInit = {}, retried = false): Promise<T> {
   const headers = new Headers(init.headers);
   const isForm = init.body instanceof FormData;
   if (!isForm) headers.set("Content-Type", "application/json");
@@ -49,6 +89,9 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     res = await fetch(path, { ...init, headers });
   } catch {
     throw new Error("サーバーに接続できません。バックエンドを起動してください");
+  }
+  if (res.status === 401 && !retried && !isPublicAuthPath(path) && (await refreshSession())) {
+    return request<T>(path, init, true);
   }
   if (res.status === 204) return undefined as T;
   const data = (await res.json().catch(() => ({}))) as T & { error?: string };
@@ -113,6 +156,7 @@ export type Post = {
   mine: boolean;
   commentCount: number;
   likeCount: number;
+  likedByMe: boolean;
 };
 
 export type PostList = {
@@ -187,4 +231,64 @@ export function createComment(postId: number, body: string) {
 
 export function deleteComment(id: number) {
   return request<void>(`/api/comments/${id}`, { method: "DELETE" });
+}
+
+export function toggleLike(postId: number) {
+  return request<Post>(`/api/posts/${postId}/likes`, { method: "POST" });
+}
+
+export type Profile = {
+  id: number;
+  username: string;
+  displayName: string;
+  followingCount: number;
+  followerCount: number;
+  followedByMe: boolean;
+  mine: boolean;
+};
+
+export type UserSummary = {
+  id: number;
+  username: string;
+  displayName: string;
+  followedByMe: boolean;
+  mine: boolean;
+};
+
+export async function searchUsers(q: string) {
+  const params = new URLSearchParams();
+  params.set("q", q);
+  const res = await request<{ users?: UserSummary[] }>(`/api/users?${params.toString()}`);
+  return { users: Array.isArray(res.users) ? res.users : [] };
+}
+
+export function getProfile(username: string) {
+  return request<Profile>(`/api/users/${encodeURIComponent(username)}`);
+}
+
+export function listUserPosts(username: string, query: ListQuery = {}) {
+  const params = new URLSearchParams();
+  if (query.limit != null) params.set("limit", String(query.limit));
+  if (query.beforeCreatedAt) params.set("beforeCreatedAt", query.beforeCreatedAt);
+  if (query.beforeId != null) params.set("beforeId", String(query.beforeId));
+  if (query.afterCreatedAt) params.set("afterCreatedAt", query.afterCreatedAt);
+  if (query.afterId != null) params.set("afterId", String(query.afterId));
+  const qs = params.toString();
+  return request<PostList>(`/api/users/${encodeURIComponent(username)}/posts${qs ? `?${qs}` : ""}`);
+}
+
+export function listFollowees(username: string) {
+  return request<{ users: UserSummary[] }>(`/api/users/${encodeURIComponent(username)}/followees`);
+}
+
+export function listFollowers(username: string) {
+  return request<{ users: UserSummary[] }>(`/api/users/${encodeURIComponent(username)}/followers`);
+}
+
+export function followUser(username: string) {
+  return request<Profile>(`/api/users/${encodeURIComponent(username)}/follow`, { method: "POST" });
+}
+
+export function unfollowUser(username: string) {
+  return request<Profile>(`/api/users/${encodeURIComponent(username)}/follow`, { method: "DELETE" });
 }

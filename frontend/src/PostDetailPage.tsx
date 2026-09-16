@@ -9,6 +9,8 @@ import {
   type User,
 } from "./api";
 import { AppHeader } from "./AppHeader";
+import { formatTime } from "./formatTime";
+import { PostCard } from "./PostCard";
 
 type Props = {
   user: User;
@@ -16,9 +18,11 @@ type Props = {
   onLogout: () => void | Promise<void>;
   onBack: () => void;
   onEdit: (id: number) => void;
+  onProfile: (username: string) => void;
+  onSearch: (q: string) => void;
 };
 
-export function PostDetailPage({ user, postId, onLogout, onBack, onEdit }: Props) {
+export function PostDetailPage({ user, postId, onLogout, onBack, onEdit, onProfile, onSearch }: Props) {
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [body, setBody] = useState("");
@@ -85,7 +89,13 @@ export function PostDetailPage({ user, postId, onLogout, onBack, onEdit }: Props
 
   return (
     <main className="page">
-      <AppHeader user={user} onLogout={onLogout} onHome={onBack} />
+      <AppHeader
+        user={user}
+        onLogout={onLogout}
+        onHome={onBack}
+        onProfile={() => onProfile(user.username)}
+        onSearch={onSearch}
+      />
       <p className="back-row">
         <button type="button" className="btn link" onClick={onBack}>
           ← タイムライン
@@ -95,34 +105,14 @@ export function PostDetailPage({ user, postId, onLogout, onBack, onEdit }: Props
       {!loading && !post ? <p className="empty">{error || "投稿が見つかりません"}</p> : null}
       {post ? (
         <article className="card post-detail">
-          <div className="post">
-            <div className="avatar">{initial(post)}</div>
-            <div>
-              <div>
-                <span className="name">{post.displayName}</span>
-                <span className="handle">@{post.username}</span>
-                <span className="meta">
-                  {" "}
-                  · {fmt(post.createdAt)}
-                  {post.mine ? (
-                    <>
-                      {" "}
-                      ·{" "}
-                      <button type="button" className="btn link" onClick={() => onEdit(post.id)}>
-                        編集
-                      </button>
-                    </>
-                  ) : null}
-                </span>
-              </div>
-              <p className="body">{post.body}</p>
-              {post.imageUrl ? <img className="thumb" src={post.imageUrl} alt="投稿画像" /> : null}
-              <div className="stats">
-                <span>♡ {post.likeCount}</span>
-                <span>コメント {post.commentCount}件</span>
-              </div>
-            </div>
-          </div>
+          <PostCard
+            post={post}
+            onEdit={post.mine ? onEdit : undefined}
+            onProfile={onProfile}
+            onLiked={setPost}
+            onError={setError}
+            large
+          />
         </article>
       ) : null}
 
@@ -137,9 +127,11 @@ export function PostDetailPage({ user, postId, onLogout, onBack, onEdit }: Props
                 <div className="avatar">{(comment.displayName || comment.username).slice(0, 1)}</div>
                 <div>
                   <div>
-                    <span className="name">{comment.displayName}</span>
-                    <span className="handle">@{comment.username}</span>
-                    <span className="meta"> · {fmt(comment.createdAt)}</span>
+                    <button type="button" className="btn link name-btn" onClick={() => onProfile(comment.username)}>
+                      <span className="name">{comment.displayName}</span>
+                      <span className="handle">@{comment.username}</span>
+                    </button>
+                    <span className="meta"> · {formatTime(comment.createdAt)}</span>
                     {comment.mine ? (
                       <>
                         {" "}
@@ -191,15 +183,4 @@ export function PostDetailPage({ user, postId, onLogout, onBack, onEdit }: Props
       ) : null}
     </main>
   );
-}
-
-function initial(post: Post) {
-  return (post.displayName || post.username).slice(0, 1);
-}
-
-function fmt(value: string) {
-  const d = new Date(value.includes("T") ? value : value.replace(" ", "T"));
-  if (Number.isNaN(d.getTime())) return value;
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }

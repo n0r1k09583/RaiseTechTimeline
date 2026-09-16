@@ -40,7 +40,9 @@ for (const post of posts) {
 SELECT p.id, p.user_id, p.body, p.image_path, p.created_at, p.updated_at,
        u.username, u.display_name,
        (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count,
-       0 AS like_count
+       (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS like_count,
+       (SELECT COUNT(*) FROM likes liked
+        WHERE liked.post_id = p.id AND liked.user_id = ?) AS liked_by_me
 FROM posts p
 JOIN users u ON u.id = p.user_id
 ORDER BY p.created_at DESC, p.id DESC
@@ -52,11 +54,11 @@ LIMIT 20;
 | 項目 | いま | N+1 か |
 |------|------|--------|
 | タイムラインのコメント数 | 上のサブクエリ | **ならない** |
-| タイムラインのいいね数 | 同じ SELECT の `0 AS like_count`（`likes` 表はまだ） | **ならない** |
+| タイムラインのいいね数 | 同じ SELECT の `like_count` / `liked_by_me` | **ならない** |
 | 投稿詳細のコメント本文 | 開いた 1 件だけ `GET /api/posts/{id}/comments` | **ならない** |
-| フォロー中のフォロー先を1人ずつ取る | 後続。表が無い | 足すときは JOIN で 1 回 |
+| フォロー中のフォロー先 | `follows` の IN サブクエリ 1 回 | **ならない** |
 
-いいね表を足すときも、投稿ごとに問い合わせない。同じ SELECT へ乗せる。
+いいね表を足すときも、投稿ごとに問い合わせない。同じ SELECT へ乗せる。実装済み。
 
 ```sql
 (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id) AS like_count,
@@ -69,6 +71,6 @@ LIMIT 20;
 
 - F-03 コメント: タイムラインカードの **コメント n件**
 - F-04 いいね: タイムラインカードの **♡ 件数** と自分が押したか
-- F-06 フォロー: 「フォロー中」でフォロー先を 1 人ずつ取る（後続）
+- F-06 フォロー: 「フォロー中」は `user_id IN (SELECT followee_id FROM follows ...)` を1回
 
 投稿詳細でコメント本文を読むのは、親が 1 件なので N+1 ではない。

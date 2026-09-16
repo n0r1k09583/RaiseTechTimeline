@@ -47,7 +47,7 @@ class PostServiceTest {
 
   @Test
   void 無い投稿は取得できない() {
-    when(posts.findById(9L)).thenReturn(null);
+    when(posts.findForViewer(9L, 1L)).thenReturn(null);
     assertApi(HttpStatus.NOT_FOUND, "投稿が見つかりません", () -> service.get(1L, 9L));
   }
 
@@ -111,7 +111,7 @@ class PostServiceTest {
             });
     Post stored = owned(8L, 1L);
     stored.setBody("あ");
-    when(posts.findById(8L)).thenReturn(stored);
+    when(posts.findForViewer(8L, 1L)).thenReturn(stored);
     assertThat(service.create(1L, "あ", null).getBody()).isEqualTo("あ");
 
     stored.setBody("あ".repeat(280));
@@ -130,6 +130,7 @@ class PostServiceTest {
   void 空画像では画像を差し替えない() {
     Post post = owned(5L, 1L);
     when(posts.findById(5L)).thenReturn(post);
+    when(posts.findForViewer(5L, 1L)).thenReturn(post);
     MockMultipartFile empty = new MockMultipartFile("image", "x.jpg", "image/jpeg", new byte[0]);
     service.update(1L, 5L, "直した", empty);
     verify(images, never()).save(empty);

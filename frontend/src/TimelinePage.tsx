@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { createPost, deletePost, listPosts, type Post, type User } from "./api";
 import { AppHeader } from "./AppHeader";
+import { PostCard } from "./PostCard";
 
 const PAGE = 20;
 const REFRESH_MS = 30_000;
@@ -14,9 +15,12 @@ type Props = {
   onLogout: () => void | Promise<void>;
   onEdit: (id: number) => void;
   onOpen: (id: number) => void;
+  onProfile: (username: string) => void;
+  onHome: () => void;
+  onSearch: (q: string) => void;
 };
 
-export function TimelinePage({ user, onLogout, onEdit, onOpen }: Props) {
+export function TimelinePage({ user, onLogout, onEdit, onOpen, onProfile, onHome, onSearch }: Props) {
   const [tab, setTab] = useState<Tab>("all");
   const [posts, setPosts] = useState<Post[]>([]);
   const [hasMore, setHasMore] = useState(false);
@@ -46,16 +50,9 @@ export function TimelinePage({ user, onLogout, onEdit, onOpen }: Props) {
   useEffect(() => {
     let cancelled = false;
     setFresh([]);
-    if (tab === "following") {
-      setPosts([]);
-      setHasMore(false);
-      setLoading(false);
-      setError("");
-      return;
-    }
     setLoading(true);
     setError("");
-    listPosts({ tab: "all", limit: PAGE })
+    listPosts({ tab, limit: PAGE })
       .then((res) => {
         if (cancelled) return;
         setPosts(res.posts);
@@ -91,12 +88,12 @@ export function TimelinePage({ user, onLogout, onEdit, onOpen }: Props) {
   useEffect(() => {
     async function refreshQuietly() {
       if (document.visibilityState !== "visible") return;
-      if (tabRef.current !== "all") return;
+      const currentTab = tabRef.current;
       const head = postsRef.current[0];
       if (!head) return;
       try {
         const res = await listPosts({
-          tab: "all",
+          tab: currentTab,
           limit: PAGE,
           afterCreatedAt: head.createdAt,
           afterId: head.id,
@@ -128,7 +125,7 @@ export function TimelinePage({ user, onLogout, onEdit, onOpen }: Props) {
 
   useEffect(() => {
     const el = sentinelRef.current;
-    if (!el || tab !== "all") return;
+    if (!el) return;
     const io = new IntersectionObserver(
       (entries) => {
         if (!entries[0]?.isIntersecting) return;
@@ -151,7 +148,6 @@ export function TimelinePage({ user, onLogout, onEdit, onOpen }: Props) {
   }
 
   async function loadOlder() {
-    if (tabRef.current !== "all") return;
     if (loading || loadingMoreRef.current || !hasMoreRef.current) return;
     const last = postsRef.current[postsRef.current.length - 1];
     if (!last) return;
@@ -159,7 +155,7 @@ export function TimelinePage({ user, onLogout, onEdit, onOpen }: Props) {
     setLoadingMore(true);
     try {
       const res = await listPosts({
-        tab: "all",
+        tab: tabRef.current,
         limit: PAGE,
         beforeCreatedAt: last.createdAt,
         beforeId: last.id,
@@ -229,7 +225,13 @@ export function TimelinePage({ user, onLogout, onEdit, onOpen }: Props) {
 
   return (
     <main className="page">
-      <AppHeader user={user} onLogout={onLogout} onHome={() => window.scrollTo({ top: 0 })} />
+      <AppHeader
+        user={user}
+        onLogout={onLogout}
+        onHome={onHome}
+        onProfile={() => onProfile(user.username)}
+        onSearch={onSearch}
+      />
       {notice ? (
         <p className="notice-bar" role="status">
           {notice}
@@ -290,55 +292,29 @@ export function TimelinePage({ user, onLogout, onEdit, onOpen }: Props) {
           </button>
         </div>
         <div>
-          {tab === "following" ? (
-            <p className="empty">フォロー中の一覧は後続です。「すべて」で全投稿を見られます。</p>
+          {loading && posts.length === 0 ? <p className="empty">読み込み中…</p> : null}
+          {!loading && posts.length === 0 && tab === "following" ? (
+            <p className="empty">フォロー中の投稿はまだありません。プロフィールからフォローできます</p>
           ) : null}
-          {tab === "all" && loading && posts.length === 0 ? <p className="empty">読み込み中…</p> : null}
-          {tab === "all" && !loading && posts.length === 0 ? (
+          {!loading && posts.length === 0 && tab === "all" ? (
             <p className="empty">まだ投稿はありません。</p>
           ) : null}
-          {tab === "all"
-            ? posts.map((post) => (
-                <article className="post" key={post.id}>
-                  <div className="avatar">{initial(post)}</div>
-                  <div>
-                    <div>
-                      <span className="name">{post.displayName}</span>
-                      <span className="handle">@{post.username}</span>
-                      <span className="meta">
-                        {" "}
-                        · {fmt(post.createdAt)}
-                        {post.mine ? (
-                          <>
-                            {" "}
-                            ·{" "}
-                            <button type="button" className="btn link" onClick={() => onEdit(post.id)}>
-                              編集
-                            </button>
-                            {" · "}
-                            <button type="button" className="btn link" onClick={() => setConfirm(post)}>
-                              削除
-                            </button>
-                          </>
-                        ) : null}
-                      </span>
-                    </div>
-                    <button type="button" className="post-main" onClick={() => onOpen(post.id)}>
-                      <p className="body">{post.body}</p>
-                      {post.imageUrl ? <img className="thumb" src={post.imageUrl} alt="投稿画像" /> : null}
-                    </button>
-                    <div className="stats">
-                      <span>♡ {post.likeCount}</span>
-                      <button type="button" className="btn link" onClick={() => onOpen(post.id)}>
-                        コメント {post.commentCount}件
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))
-            : null}
+          {posts.map((item) => (
+            <PostCard
+              key={item.id}
+              post={item}
+              onOpen={onOpen}
+              onEdit={onEdit}
+              onDelete={setConfirm}
+              onProfile={onProfile}
+              onLiked={(next) =>
+                setPosts((prev) => prev.map((row) => (row.id === next.id ? next : row)))
+              }
+              onError={setError}
+            />
+          ))}
           <div ref={sentinelRef} className="scroll-sentinel" />
-          {tab === "all" && loadingMore ? <p className="empty">続きを読み込み中…</p> : null}
+          {loadingMore ? <p className="empty">続きを読み込み中…</p> : null}
         </div>
       </section>
       {confirm ? (
@@ -364,15 +340,4 @@ export function TimelinePage({ user, onLogout, onEdit, onOpen }: Props) {
 function mergeById(incoming: Post[], prev: Post[]): Post[] {
   const ids = new Set(incoming.map((p) => p.id));
   return [...incoming, ...prev.filter((p) => !ids.has(p.id))];
-}
-
-function initial(post: Post) {
-  return (post.displayName || post.username).slice(0, 1);
-}
-
-function fmt(value: string) {
-  const d = new Date(value.includes("T") ? value : value.replace(" ", "T"));
-  if (Number.isNaN(d.getTime())) return value;
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }

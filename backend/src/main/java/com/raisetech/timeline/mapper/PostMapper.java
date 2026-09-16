@@ -10,9 +10,20 @@ public interface PostMapper {
 
   Post findById(@Param("id") long id);
 
+  Post findForViewer(@Param("id") long id, @Param("viewerId") long viewerId);
+
   List<Post> list(
       @Param("viewerId") long viewerId,
       @Param("tab") String tab,
+      @Param("limit") int limit,
+      @Param("beforeCreatedAt") String beforeCreatedAt,
+      @Param("beforeId") Long beforeId,
+      @Param("afterCreatedAt") String afterCreatedAt,
+      @Param("afterId") Long afterId);
+
+  List<Post> listByAuthor(
+      @Param("viewerId") long viewerId,
+      @Param("authorId") long authorId,
       @Param("limit") int limit,
       @Param("beforeCreatedAt") String beforeCreatedAt,
       @Param("beforeId") Long beforeId,

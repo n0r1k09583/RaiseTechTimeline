@@ -28,7 +28,15 @@ describe("PostDetailPage", () => {
     vi.mocked(getPost).mockRejectedValue(new Error("投稿が見つかりません"));
     vi.mocked(listComments).mockRejectedValue(new Error("投稿が見つかりません"));
     render(
-      <PostDetailPage user={user} postId={99} onLogout={vi.fn()} onBack={vi.fn()} onEdit={vi.fn()} />,
+      <PostDetailPage
+        user={user}
+        postId={99}
+        onLogout={vi.fn()}
+        onBack={vi.fn()}
+        onEdit={vi.fn()}
+        onProfile={vi.fn()}
+        onSearch={vi.fn()}
+      />,
     );
     expect(await screen.findByText("投稿が見つかりません")).toBeInTheDocument();
   });
@@ -38,7 +46,15 @@ describe("PostDetailPage", () => {
     vi.mocked(getPost).mockResolvedValue(post());
     vi.mocked(listComments).mockResolvedValue({ comments: [] });
     render(
-      <PostDetailPage user={user} postId={10} onLogout={vi.fn()} onBack={vi.fn()} onEdit={vi.fn()} />,
+      <PostDetailPage
+        user={user}
+        postId={10}
+        onLogout={vi.fn()}
+        onBack={vi.fn()}
+        onEdit={vi.fn()}
+        onProfile={vi.fn()}
+        onSearch={vi.fn()}
+      />,
     );
     await screen.findByText("本文です");
     await events.click(screen.getByRole("button", { name: "送信" }));
@@ -52,7 +68,15 @@ describe("PostDetailPage", () => {
     vi.mocked(listComments).mockResolvedValue({ comments: [comment()] });
     vi.mocked(deleteComment).mockRejectedValue(new Error("自分のコメントだけ削除できます"));
     render(
-      <PostDetailPage user={user} postId={10} onLogout={vi.fn()} onBack={vi.fn()} onEdit={vi.fn()} />,
+      <PostDetailPage
+        user={user}
+        postId={10}
+        onLogout={vi.fn()}
+        onBack={vi.fn()}
+        onEdit={vi.fn()}
+        onProfile={vi.fn()}
+        onSearch={vi.fn()}
+      />,
     );
     await screen.findByText("コメントです");
     await events.click(screen.getByRole("button", { name: "削除" }));

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EditPage } from "./EditPage";
@@ -35,7 +35,7 @@ describe("EditPage", () => {
     render(<EditPage user={user} postId={10} onLogout={vi.fn()} onDone={vi.fn()} />);
     await screen.findByDisplayValue("元の本文");
     const gif = new File(["gif"], "x.gif", { type: "image/gif" });
-    await events.upload(screen.getByLabelText("画像を差し替え（任意）"), gif);
+    fireEvent.change(screen.getByLabelText("画像を差し替え（任意）"), { target: { files: [gif] } });
     await events.click(screen.getByRole("button", { name: "保存する" }));
     expect(await screen.findByText("JPEG / PNG / WebP のみです")).toBeInTheDocument();
     expect(updatePost).not.toHaveBeenCalled();

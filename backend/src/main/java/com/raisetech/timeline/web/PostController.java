@@ -4,6 +4,7 @@ import com.raisetech.timeline.config.OpenApiConfig;
 import com.raisetech.timeline.dto.ErrorResponse;
 import com.raisetech.timeline.dto.PostListResponse;
 import com.raisetech.timeline.dto.PostResponse;
+import com.raisetech.timeline.service.LikeService;
 import com.raisetech.timeline.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -45,9 +46,11 @@ public class PostController {
   private static final String ERROR_JSON = MediaType.APPLICATION_JSON_VALUE;
 
   private final PostService posts;
+  private final LikeService likes;
 
-  public PostController(PostService posts) {
+  public PostController(PostService posts, LikeService likes) {
     this.posts = posts;
+    this.likes = likes;
   }
 
   @GetMapping
@@ -57,7 +60,7 @@ public class PostController {
           """
           新しい順。続き（無限スクロール）は beforeCreatedAt + beforeId。
           新しい差分は afterCreatedAt + afterId。
-          tab=following はフォロー表がまだ無いので空案内になる。
+          tab=following は自分とフォロー中の投稿。フォロー先は IN サブクエリ1回（N+1 にしない）。
           """)
   @ApiResponse(
       responseCode = "200",
@@ -68,7 +71,7 @@ public class PostController {
               schema = @Schema(implementation = PostListResponse.class)))
   public PostListResponse list(
       HttpServletRequest request,
-      @Parameter(description = "all=全投稿。following=フォロー中（未実装のため空）")
+      @Parameter(description = "all=全投稿。following=自分とフォロー中")
           @RequestParam(defaultValue = "all")
           String tab,
       @Parameter(description = "件数。省略時20、最大50") @RequestParam(required = false) Integer limit,
@@ -169,6 +172,20 @@ public class PostController {
   public void delete(
       HttpServletRequest request, @Parameter(description = "投稿ID") @PathVariable long id) {
     posts.delete(userId(request), id);
+  }
+
+  @PostMapping("/{id}/likes")
+  @Operation(summary = "いいねをトグル", description = "未いいねなら付ける。済みなら外す。件数は同じ SELECT のサブクエリ。")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "トグル後の投稿（likeCount と likedByMe）"),
+    @ApiResponse(
+        responseCode = "404",
+        description = "投稿が無い",
+        content = @Content(mediaType = ERROR_JSON, schema = @Schema(implementation = ErrorResponse.class)))
+  })
+  public PostResponse toggleLike(
+      HttpServletRequest request, @Parameter(description = "投稿ID") @PathVariable long id) {
+    return likes.toggle(userId(request), id);
   }
 
   private static long userId(HttpServletRequest request) {

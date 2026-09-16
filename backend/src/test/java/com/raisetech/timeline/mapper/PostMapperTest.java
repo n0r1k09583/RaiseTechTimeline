@@ -3,6 +3,8 @@ package com.raisetech.timeline.mapper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.raisetech.timeline.domain.Comment;
+import com.raisetech.timeline.domain.Follow;
+import com.raisetech.timeline.domain.Like;
 import com.raisetech.timeline.domain.Post;
 import com.raisetech.timeline.domain.User;
 import com.raisetech.timeline.support.MapperH2Test;
@@ -21,6 +23,12 @@ class PostMapperTest {
   @Autowired
   CommentMapper comments;
 
+  @Autowired
+  LikeMapper likes;
+
+  @Autowired
+  FollowMapper follows;
+
   @Test
   void 無い投稿はnull() {
     assertThat(posts.findById(404)).isNull();
@@ -37,6 +45,7 @@ class PostMapperTest {
     Post loaded = posts.findById(post.getId());
     assertThat(loaded.getCommentCount()).isEqualTo(2);
     assertThat(loaded.getLikeCount()).isZero();
+    assertThat(loaded.isLikedByMe()).isFalse();
     assertThat(loaded.getUsername()).isEqualTo("author");
   }
 
@@ -82,6 +91,42 @@ class PostMapperTest {
     assertThat(posts.list(me.getId(), "all", 20, newer.getCreatedAt(), newer.getId(), null, null))
         .extracting(Post::getId)
         .containsExactly(older.getId());
+  }
+
+  @Test
+  void いいね件数と自分の状態は同じSELECTで取る() {
+    User author = user("like_a@example.com", "like_a", "いいねA");
+    User fan = user("like_b@example.com", "like_b", "いいねB");
+    Post post = post(author.getId(), "いいね確認", "2026-09-01 10:00:00");
+    Like like = new Like();
+    like.setPostId(post.getId());
+    like.setUserId(fan.getId());
+    likes.insert(like);
+
+    Post viewer = posts.findForViewer(post.getId(), fan.getId());
+    assertThat(viewer.getLikeCount()).isEqualTo(1);
+    assertThat(viewer.isLikedByMe()).isTrue();
+    Post other = posts.findForViewer(post.getId(), author.getId());
+    assertThat(other.getLikeCount()).isEqualTo(1);
+    assertThat(other.isLikedByMe()).isFalse();
+  }
+
+  @Test
+  void フォロー中タブはフォロー先と自分を1クエリで出す() {
+    User me = user("fol_me@example.com", "fol_me", "自分");
+    User them = user("fol_them@example.com", "fol_them", "相手");
+    User other = user("fol_other@example.com", "fol_other", "第三者");
+    post(me.getId(), "自分の投稿", "2026-09-01 12:00:00");
+    post(them.getId(), "相手の投稿", "2026-09-01 13:00:00");
+    post(other.getId(), "第三者の投稿", "2026-09-01 14:00:00");
+    Follow follow = new Follow();
+    follow.setFollowerId(me.getId());
+    follow.setFolloweeId(them.getId());
+    follows.insert(follow);
+
+    assertThat(posts.list(me.getId(), "following", 20, null, null, null, null))
+        .extracting(Post::getBody)
+        .containsExactly("相手の投稿", "自分の投稿");
   }
 
   private User user(String email, String username, String displayName) {

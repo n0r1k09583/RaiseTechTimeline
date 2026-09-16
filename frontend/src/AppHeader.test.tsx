@@ -27,4 +27,21 @@ describe("AppHeader", () => {
     await events.click(screen.getByRole("button", { name: /課題提出/ }));
     expect(onHome).toHaveBeenCalledOnce();
   });
+
+  it("strips @ before searching", async () => {
+    const onSearch = vi.fn();
+    const events = userEvent.setup();
+    render(<AppHeader user={user} onLogout={vi.fn()} onSearch={onSearch} />);
+    await events.type(screen.getByLabelText("ユーザー名で検索"), "@hana");
+    await events.click(screen.getByRole("button", { name: "検索" }));
+    expect(onSearch).toHaveBeenCalledWith("hana");
+  });
+
+  it("does not search an empty query", async () => {
+    const onSearch = vi.fn();
+    const events = userEvent.setup();
+    render(<AppHeader user={user} onLogout={vi.fn()} onSearch={onSearch} />);
+    await events.click(screen.getByRole("button", { name: "検索" }));
+    expect(onSearch).not.toHaveBeenCalled();
+  });
 });

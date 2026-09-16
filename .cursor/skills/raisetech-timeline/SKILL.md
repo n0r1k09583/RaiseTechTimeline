@@ -45,16 +45,17 @@ description: >-
 - ログイン／新規登録／ログアウト。成功後は **タイムライン**（ログイン成功の仮画面は使わない）
 - 投稿の作成・編集・削除。自分の操作直後はすぐ反映。他人の変更は約30秒おきに静かに取り直す。WebSocket の一件通知は使わない。続きは無限スクロール（「もっと見る」は置かない）
 - コメントの作成・一覧・自分の削除。件数は投稿と同じ SELECT のサブクエリで出す（N+1 にしない）。投稿詳細から読む
-- いいね操作・フォロー・プロフィール・検索は **まだ**。件数の枠は `0 AS like_count`
+- いいねは `POST /api/posts/{id}/likes` でトグル。件数と `likedByMe` は投稿と同じ SELECT
+- プロフィール `/users/:username`、フォロー／フォロワー一覧、ユーザー検索。フォローは `follows` の1行。「フォロー中」タブは IN サブクエリ1回
 - 画像はローカル `uploads/` が既定（`ImageStorage`）。`APP_STORAGE=s3` のとき `S3ImageStorage`。DB にはキーだけ。提出の動作確認はローカルで足りる
 - AWS の **定義** は `infra/terraform/`。画面は S3+CloudFront、API は ECS Fargate、DB は RDS PostgreSQL 17、画像は S3、前段は ALB。EC2 / Nginx / NAT は置かない。Fargate は public IP。`desired_count` 既定 0。**`terraform apply` して作りっぱなしにしない**。解説は `infra/terraform/README.md`。プロファイル `aws` は `application-aws.yml` と `db/postgres/`
 - API 仕様書は springdoc。`/v3/api-docs` と `/swagger-ui.html`。コントローラを直して再起動すると更新される。解説は `docs/openapi.md`
 - 画面は Vite + React の **SPA**（Next.js の SSG/SSR にしない）。公開は `/login` と `/signup` を検索対象。ログイン後のタイムラインは `noindex`
 - ログは `backend/logs/`。アプリ／エラーは JSON（traceId・userId・duration_ms）。`RequestMdcFilter`。Datadog は入れない。パスワード・トークンは出さない。解説は `docs/logging.md`
 - テストは H2（本番 SQLite に書かない）。テストメソッド名は日本語にしてよい。Checkstyle は `backend/checkstyle.xml`。毎回の品質チェックに E2E も k6 も載せない。負荷は任意で k6。解説は `docs/testing.md` と `docs/performance.md`
-- マイグレーション: `V1` users / `V2` refresh_tokens / `V3` posts / `V4` comments。likes・follows はこれから
+- マイグレーション: `V1` users / `V2` refresh_tokens / `V3` posts / `V4` comments / `V5` likes / `V6` follows
 - MyBatis の SQL はすべて XML（`resources/mapper/*.xml`）。Java に `@Select` を書かない。設定は `application.yml` の `mybatis.mapper-locations`
-- 再開は `docs/next-lesson.md`（プロフィール／フォローのあと、最終回は検索・「フォロー中」・画像の全体調整）
+- 再開は `docs/next-lesson.md`（7機能は本実装あり。残りは提出 URL 用の短時間 apply→destroy、任意の k6 / E2E）
 - 参考はタスクマネジメント。プラットフォームバックエンドは見ない
 
 ## やってはいけないこと
